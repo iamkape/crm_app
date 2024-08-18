@@ -1,12 +1,14 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from functools import partial
 
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(762, 540)
+class MainDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setObjectName("Dialog")
+        self.setFixedSize(765, 540)
 
-        self.tabWidget = QtWidgets.QTabWidget(Dialog)
+        self.tabWidget = QtWidgets.QTabWidget(self)
         self.tabWidget.setGeometry(QtCore.QRect(0, 0, 761, 541))
         self.tabWidget.setObjectName("tabWidget")
 
@@ -110,13 +112,12 @@ class Ui_Dialog(object):
 
         self.tabWidget.addTab(self.tab_4, "")
 
-        self.retranslateUi(Dialog)
+        self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-    def retranslateUi(self, Dialog):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "CRM Application"))
+        self.setWindowTitle(_translate("Dialog", "CRM Application"))
         self.new_transaction.setText(_translate("Dialog", "New transaction"))
         self.upload_document.setText(_translate("Dialog", "Upload document"))
         self.add_document.setText(_translate("Dialog", "Add document"))
@@ -134,8 +135,6 @@ class Ui_Dialog(object):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
+    ui = MainDialog()
+    ui.show()
     sys.exit(app.exec_())
