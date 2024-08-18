@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QApplication
-
+from Ruslan.main_dialog import MainDialog
 
 class LoginW(QWidget):
     def __init__(self):
@@ -53,8 +53,8 @@ class LoginW(QWidget):
 
     def open_main(self):
         """Если прологинился то открывает главное окно"""
-        # self.main_window = Ui_MainWindow()
-        # self.main_window.show()
+        self.main_window = MainDialog()
+        self.main_window.show()
         self.close()
 
 
