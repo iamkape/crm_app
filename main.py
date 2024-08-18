@@ -1,5 +1,7 @@
 import sqlite3
 import hashlib
+from os import access
+
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QApplication
 from Ruslan.main_dialog import MainDialog
 
@@ -10,7 +12,7 @@ class LoginW(QWidget):
         self.setFixedSize(300, 150)
 
         # Подключение к базе данных
-        self.con = sqlite3.connect('my/store_database.db')
+        self.con = sqlite3.connect('My/store_database.db')
 
         # Элементы интерфейса
         self.label_username = QLabel("Имя пользователя:")
@@ -34,22 +36,24 @@ class LoginW(QWidget):
         layout.addWidget(self.button_login)
         self.setLayout(layout)
 
-    def login(self):
+    def login(self)->str:
         """Проверка логина и пароля"""
         username = self.input_username.text()
         password = self.input_password.text()
         hash_password = hashlib.md5(password.encode()).hexdigest()
         print(hash_password)
         with self.con:
-            user = self.con.execute("SELECT * FROM Employees WHERE first_name=? AND password=?", (username,
-                                                                                        hash_password)).fetchall()
+            user = self.con.execute("SELECT * FROM Employees WHERE login=? AND password=?", (username,
+                                                                   hash_password)).fetchall()
+            access = self.con.execute('SELECT super_admin FROM Employees WHERE login=? AND password=?',(username,
+                                             hash_password)).fetchall()
+            self.access_rights = (', '.join(*access))
             if user:
                 QMessageBox.information(self, "Поздравляю", "Вход выполнен!")
                 self.open_main()
             else:
-
                 QMessageBox.information(self, "Попробуй снова","Неверный логин или пароль")
-
+        return self.access_rights # ПЕРЕДАТЬ РУСЛАНУ
 
     def open_main(self):
         """Если прологинился то открывает главное окно"""
