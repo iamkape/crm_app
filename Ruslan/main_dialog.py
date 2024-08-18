@@ -9,7 +9,7 @@ class MainDialog(QtWidgets.QDialog):
         super().__init__()
         self.con = sqlite3.connect('My/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
-        self.table_names = ['Transactions_history', 'Customers', 'Products', 'Stock']
+        self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
 
         self.setObjectName("Dialog")
