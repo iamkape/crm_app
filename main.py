@@ -37,7 +37,7 @@ class LoginW(QWidget):
         layout.addWidget(self.button_login)
         self.setLayout(layout)
 
-    def login(self)->str:
+    def login(self)->None:
         """Проверка логина и пароля"""
         username = self.input_username.text()
         password = self.input_password.text()
@@ -46,20 +46,21 @@ class LoginW(QWidget):
         with self.con:
             user = self.con.execute("SELECT * FROM Employees WHERE login=? AND password=?", (username,
                                                                    hash_password)).fetchall()
-            access = self.con.execute('SELECT super_admin FROM Employees WHERE login=? AND password=?',(username,
-                                             hash_password)).fetchall()
-            self.access_rights = (', '.join(*access))
+            access = self.con.execute('SELECT super_admin FROM Employees WHERE login=? AND password=?', (username,
+                                                                                                         hash_password)).fetchall()
             if user:
                 QMessageBox.information(self, "Поздравляю", "Вход выполнен!")
-                self.open_main()
+                self.open_main(access)
             else:
                 QMessageBox.information(self, "Попробуй снова","Неверный логин или пароль")
-        return self.access_rights
 
-    def open_main(self):
+
+
+
+    def open_main(self, rights:list)->None:
         """Если прологинился то открывает главное окно"""
-        print(self.access_rights)
-        self.main_window = MainDialog(self.access_rights,self.path)
+        access_rights = (', '.join(*rights))
+        self.main_window = MainDialog(access_rights,self.path)
         self.main_window.show()
         self.close()
 
