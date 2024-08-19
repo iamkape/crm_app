@@ -2,12 +2,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel
 from functools import partial
 import sqlite3
-
+from Sergey.client_card import Ui_Dialog
 
 class MainDialog(QtWidgets.QDialog):
-    def __init__(self):
+    def __init__(self, user=None):
         super().__init__()
-        self.con = sqlite3.connect('my/store_database.db')
+        self.user = user
+        self.con = sqlite3.connect('D:/PycharmProjects/crm_app/my/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
@@ -115,6 +116,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
 
         self.retranslateUi()
+        #self.tabWidget.setCurrentIndex(0)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -134,7 +136,7 @@ class MainDialog(QtWidgets.QDialog):
 
     def insert_data_into_table(self) -> None:
         """Заполняет tableWidget данными из текущей таблицы в comboBox."""
-        self.changes_dict = {}  # Обнуляем словарь изменений.
+        #self.changes_dict = {}  # Обнуляем словарь изменений.
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
         with self.con:
@@ -147,11 +149,15 @@ class MainDialog(QtWidgets.QDialog):
             self.table_widgets[tab_index].setRowCount(len(rows_list))  # Указывает количество строк.
             self.table_widgets[tab_index].setVerticalHeaderLabels(rows_list)  # Указывает имена строк.
             for i in range(len(table_data)):
-                self.changes_dict[str(rows_list[i])] = dict.fromkeys(self.columns_list, None)
+                #self.changes_dict[str(rows_list[i])] = dict.fromkeys(self.columns_list, None)
                 for j in range(len(table_data[i])):
-                    self.changes_dict[str(rows_list[i])][self.columns_list[j]] = table_data[i][j]
+                    #self.changes_dict[str(rows_list[i])][self.columns_list[j]] = table_data[i][j]
                     item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
                     self.table_widgets[tab_index].setItem(i, j, item)
+
+    def open_client_card(self):
+        client_card_window = Ui_Dialog()
+        resp = client_card_window.exec_()
 
 
 if __name__ == "__main__":
