@@ -47,19 +47,23 @@ class LoginW(QWidget):
                                                                    hash_password)).fetchall()
             access = self.con.execute('SELECT super_admin FROM Employees WHERE login=? AND password=?', (username,
                                                                                                          hash_password)).fetchall()
+            id = self.con.execute('SELECT id FROM Employees WHERE login=? AND password=?', (username,
+
+                                                                                            hash_password)).fetchone()
+            print(id)
             if user:
                 QMessageBox.information(self, "Поздравляю", "Вход выполнен!")
-                self.open_main(access)
+                self.open_main(access,id)
             else:
                 QMessageBox.information(self, "Попробуй снова","Неверный логин или пароль")
 
 
 
-
-    def open_main(self, rights:list)->None:
+    def open_main(self, rights:list, id)->None:
         """Если прологинился то открывает главное окно"""
         access_rights = (', '.join(*rights))
-        self.main_window = MainDialog(access_rights)
+        manager_id = str(*id)
+        self.main_window = MainDialog(access_rights, manager_id)
         self.main_window.show()
         self.close()
 

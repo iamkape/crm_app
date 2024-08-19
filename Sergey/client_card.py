@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QLineEdit, QLabel
 
 class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data=False):
+        print(data)
         super().__init__()
         self.con = sqlite3.connect('../My/store_database.db')
         self.setObjectName("Client card")
@@ -33,11 +34,13 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
-
+        self.pushButton_4.clicked.connect(self.closeDialog)
         self.retranslateUi(data)
 
 
-    def retranslateUi(self,data):
+    def retranslateUi(self,data)->None:
+        """В зависимости от того было ли двойное нажатие или нажатие кнопки
+        формирует диалоговое окно"""
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("Dialog", "Client card"))
         self.pushButton.setText(_translate("Dialog", "upload document"))
@@ -62,7 +65,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 lineedit_name = f'lineedit_{i}'
                 if data is False: lineedit.setText('')
                 else :
-                    lineedit.setText(data[i].text())
+                    lineedit.setText(data[i])
                     self.pushButton_2.setEnabled(True)
                 setattr(self, label_name, label)
                 setattr(self, lineedit_name, lineedit)
@@ -76,6 +79,17 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     self.gridLayout.addWidget(label, i - 3, 6, 1, 1)
                 self.setLayout(self.gridLayout)
 
+    def deleteClient(self):
+        pass
+
+    def saveClient(self):
+        pass
+
+    def uploadDoc(self):
+        pass
+
+    def closeDialog(self)->None:
+        QtWidgets.QDialog.close(self)
 
 
 

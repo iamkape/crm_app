@@ -33,7 +33,7 @@ class Ui_Authorization(QtWidgets.QDialog):
 
         self.retranslateUi()
         self.buttonBox.accepted.connect(self.createManager)
-        self.buttonBox.rejected.connect(self.cancel_dial)
+        self.buttonBox.rejected.connect(self.cancelDial)
 
 
     def retranslateUi(self)->None:
@@ -94,7 +94,7 @@ class Ui_Authorization(QtWidgets.QDialog):
                 self.alert_msg.exec_()
 
 
-    def cancel_dial(self)->None:
+    def cancelDial(self)->None:
         """Закрывает Диалоговое окно"""
         QtWidgets.QDialog.close(self)
 
