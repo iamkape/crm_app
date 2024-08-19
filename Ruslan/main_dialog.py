@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLab
 from functools import partial
 import sqlite3
 from Sergey.client_card import Ui_Dialog
-
+from Sergey.authorization import Ui_Authorization
 class MainDialog(QtWidgets.QDialog):
     def __init__(self, user=None, path=None):
         super().__init__()
@@ -41,12 +41,14 @@ class MainDialog(QtWidgets.QDialog):
         self.add_document = QtWidgets.QPushButton(self.tab)
         self.add_document.setGeometry(QtCore.QRect(280, 10, 101, 31))
         self.add_document.setObjectName("add_document")
-        self.add_document.setEnabled(False)
+        if user != 'super':
+            self.add_document.setEnabled(False)
 
         self.add_manager = QtWidgets.QPushButton(self.tab)
         self.add_manager.setGeometry(QtCore.QRect(400, 10, 101, 31))
         self.add_manager.setObjectName("add_manager")
-        self.add_manager.setEnabled(False)
+        if user != 'super':
+            self.add_manager.setEnabled(False)
 
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
         self.lineEdit.setGeometry(QtCore.QRect(150, 20, 113, 21))
@@ -118,6 +120,7 @@ class MainDialog(QtWidgets.QDialog):
 
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
         self.add_client.clicked.connect(self.open_client_card)
+        self.add_manager.clicked.connect(self.open_manager_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
 
         self.retranslateUi()
@@ -175,6 +178,10 @@ class MainDialog(QtWidgets.QDialog):
             arg = self.get_string_values(arg)
         client_card_window = Ui_Dialog(arg, self.path)
         resp = client_card_window.exec_()
+
+    def open_manager_card(self):
+        manager_card_window = Ui_Authorization(self.path)
+        resp = manager_card_window.exec_()
 
 
 if __name__ == "__main__":
