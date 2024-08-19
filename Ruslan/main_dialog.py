@@ -7,6 +7,7 @@ import sqlite3
 from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
 #from Maksim.warehouse_dialog import AddWarehouseDialog
+#from Maksim.product_dialog import AddProductDialog
 
 
 class MainDialog(QtWidgets.QDialog):
@@ -130,7 +131,9 @@ class MainDialog(QtWidgets.QDialog):
         self.comboBox.activated.connect(self.insert_data_into_table)
         self.add_client.clicked.connect(self.open_client_card)
         self.add_manager.clicked.connect(self.open_manager_card)
+        self.add_product.clicked.connect(self.open_product_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
+        self.tableWidget_4.cellDoubleClicked.connect(self.open_product_card)
         self.add_warehouse.clicked.connect(self.open_warehouse_card)
         self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
 
@@ -207,6 +210,13 @@ class MainDialog(QtWidgets.QDialog):
         print(arg)
         warehouse_card_window = AddWarehouseDialog(arg)
         resp = warehouse_card_window.exec_()
+
+    def open_product_card(self, arg):
+        if arg:
+            arg = self.get_string_values(arg)
+        product_card_window = AddProductDialog(arg)
+        resp = product_card_window.exec_()
+
 
 if __name__ == "__main__":
     import sys
