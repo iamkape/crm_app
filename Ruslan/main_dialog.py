@@ -1,3 +1,5 @@
+
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel
 from functools import partial
@@ -114,9 +116,10 @@ class MainDialog(QtWidgets.QDialog):
         self.tabWidget.addTab(self.tab_4, "")
 
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
+        self.add_client.clicked.connect(self.open_client_card)
+        self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
 
         self.retranslateUi()
-        #self.tabWidget.setCurrentIndex(0)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -155,8 +158,21 @@ class MainDialog(QtWidgets.QDialog):
                     item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
                     self.table_widgets[tab_index].setItem(i, j, item)
 
-    def open_client_card(self):
-        client_card_window = Ui_Dialog()
+    def get_string_values(self, row):
+        column_count = self.table_widgets[self.tabWidget.currentIndex()].columnCount()
+        values = []
+        for column in range(column_count):
+            item = self.table_widgets[self.tabWidget.currentIndex()].item(row, column)
+            if item is not None:
+                values.append(item.text())
+            else:
+                values.append('')  # Если ячейка пустая
+        return values
+
+    def open_client_card(self, arg):
+        if arg:
+            arg = self.get_string_values(arg)
+        client_card_window = Ui_Dialog(arg)
         resp = client_card_window.exec_()
 
 
