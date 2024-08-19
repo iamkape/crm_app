@@ -50,7 +50,6 @@ class LoginW(QWidget):
             id = self.con.execute('SELECT id FROM Employees WHERE login=? AND password=?', (username,
 
                                                                                             hash_password)).fetchone()
-            print(id)
             if user:
                 QMessageBox.information(self, "Поздравляю", "Вход выполнен!")
                 self.open_main(access,id)
@@ -63,7 +62,6 @@ class LoginW(QWidget):
         """Если прологинился то открывает главное окно"""
         access_rights = (', '.join(*rights))
         manager_id = [str(i) for i in id]
-        print(*manager_id)
         self.main_window = MainDialog(access_rights, *manager_id)
         self.main_window.show()
         self.close()

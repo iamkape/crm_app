@@ -1,6 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
+import re
+from PyQt5.QtCore import QRegExp
+from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
+from setuptools.config.pyprojecttoml import validate
 
 
 class Ui_Client_Add(QtWidgets.QDialog):
@@ -36,6 +40,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
         self.alert_msg.setWindowTitle('Information')
+        self.pushButton_3.clicked.connect(self.saveClient)
         self.pushButton_4.clicked.connect(self.closeDialog)
         self.pushButton_2.clicked.connect(self.deleteClient)
         self.retranslateUi()
@@ -62,6 +67,14 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     if self.data is False:
                         lineedit.setText('')
                         self.pushButton_2.setEnabled(False)
+                elif i in (1,2):
+                    lineedit = QLineEdit(self)
+                    validator = QRegExpValidator(QRegExp('[a-zA-Z]+'))
+                    lineedit.setValidator(validator)
+                elif i == 4:
+                    lineedit = QLineEdit(self)
+                    validator = QRegExpValidator(QRegExp('(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?'))
+                    lineedit.setValidator(validator)
                 else: lineedit = QLineEdit(self)
                 label_name = f'label_{i}'
                 label = QLabel(f'{self.name_of_col[i]}')
@@ -70,6 +83,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 else :
                     lineedit.setText(self.data[i])
                     self.pushButton_2.setEnabled(True)
+                self.lineedit_data.append(lineedit.text())
                 setattr(self, label_name, label)
                 setattr(self, lineedit_name, lineedit)
                 self.gridLayout.addWidget(lineedit, i+1, 0, 1, 1)
@@ -82,7 +96,9 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     self.gridLayout.addWidget(label, i - 3, 6, 1, 1)
                 self.setLayout(self.gridLayout)
 
-    def deleteClient(self):
+
+    def deleteClient(self)->None:
+        """Удаляет по id клиента с подтверждением действительно ли хочет удалить"""
         with self.con:
             try:
                 database_query = (f"DELETE FROM Customers WHERE id={self.data[0]}")
@@ -90,14 +106,42 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 self.alert_msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 self.alert_msg.exec_()
                 self.alert_msg.accepted(self.con.execute(database_query))
-                QtWidgets.QDialog.close(self)
                 self.alert_msg.rejected(self.alert_msg.close())
+                QtWidgets.QDialog.close(self)
             except Exception as er:
+                self.alert_msg.setText(f'Something wrong {er}')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
+
+    def saveClient(self)->None:
+        """Сохраняет данные нового клиента
+        Проверяет валидность email"""
+        for i in range(len(self.lineedit_data)):
+            if i == 3:
+                pattern = re.compile(r"^\S+@\S+\.\S+$")
+                is_email = pattern.match(self.lineedit_data[i])
+                if is_email is None:
+                    self.alert_msg.setText('Check email address (user@example.com)')
+                    self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                    self.alert_msg.exec_()
+        with self.con:
+            val = ', '.join('?' * (len(self.name_of_col[1:])))
+            column = ', '.join(self.name_of_col[1:])
+            try:
+                print(self.lineedit_data, '133')
+                print(self.lineedit_data[1:], '134')
+                query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
+                print(query_database)
+                self.con.execute(query_database, self.lineedit_data[1:])
+                self.alert_msg.setText('Your data is saved!')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
+            except Exception as er:
+                self.alert_msg.setText(f'Error {er}')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
                 print(er)
-
-    def saveClient(self):
-        pass
-
+        QtWidgets.QDialog.close(self)
     def uploadDoc(self):
         pass
 
