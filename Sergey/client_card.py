@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QLineEdit, QLabel
 
 
 class Ui_Client_Add(QtWidgets.QDialog):
-    def __init__(self,data=None):
+    def __init__(self,data=False):
         super().__init__()
         self.con = sqlite3.connect('../My/store_database.db')
         self.setObjectName("Client card")

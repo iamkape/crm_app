@@ -59,7 +59,7 @@ class LoginW(QWidget):
     def open_main(self, rights:list)->None:
         """Если прологинился то открывает главное окно"""
         access_rights = (', '.join(*rights))
-        self.main_window = MainDialog(access_rights,self.path)
+        self.main_window = MainDialog(access_rights)
         self.main_window.show()
         self.close()
 
