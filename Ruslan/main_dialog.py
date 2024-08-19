@@ -144,6 +144,8 @@ class MainDialog(QtWidgets.QDialog):
     def insert_data_into_table(self) -> None:
         """Заполняет tableWidget данными из текущей таблицы в comboBox."""
         #self.changes_dict = {}  # Обнуляем словарь изменений.
+        self.comboBox.clear()
+        self.add_warehouses_to_combobox()
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
         with self.con:
@@ -161,6 +163,10 @@ class MainDialog(QtWidgets.QDialog):
                     #self.changes_dict[str(rows_list[i])][self.columns_list[j]] = table_data[i][j]
                     item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
                     self.table_widgets[tab_index].setItem(i, j, item)
+
+    def add_warehouses_to_combobox(self):
+        warehouse_names = [el[0] for el in self.con.execute("SELECT name FROM Warehouses").fetchall()]
+        self.comboBox.addItems(warehouse_names)
 
     def get_string_values(self, row):
         column_count = self.table_widgets[self.tabWidget.currentIndex()].columnCount()
