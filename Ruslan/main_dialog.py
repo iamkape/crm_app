@@ -9,8 +9,9 @@ from Sergey.client_card import Ui_Dialog
 class MainDialog(QtWidgets.QDialog):
     def __init__(self, user=None, path=None):
         super().__init__()
+        self.path = path
         self.user = user
-        self.con = sqlite3.connect(path)
+        self.con = sqlite3.connect(self.path)
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
@@ -172,7 +173,7 @@ class MainDialog(QtWidgets.QDialog):
     def open_client_card(self, arg):
         if arg:
             arg = self.get_string_values(arg)
-        client_card_window = Ui_Dialog(arg)
+        client_card_window = Ui_Dialog(arg, self.path)
         resp = client_card_window.exec_()
 
 
