@@ -7,7 +7,7 @@ import sqlite3
 from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
 #from Maksim.warehouse_dialog import AddWarehouseDialog
-#from Maksim.product_dialog import AddProductDialog
+from Maksim.product_dialog import AddProductDialog
 
 
 class MainDialog(QtWidgets.QDialog):
@@ -15,7 +15,7 @@ class MainDialog(QtWidgets.QDialog):
         super().__init__()
         self.manager_id = manager_id
         self.user = user
-        self.con = sqlite3.connect('../My/store_database.db')
+        self.con = sqlite3.connect('My/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
@@ -135,8 +135,8 @@ class MainDialog(QtWidgets.QDialog):
         self.add_product.clicked.connect(self.open_product_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
         self.tableWidget_4.cellDoubleClicked.connect(self.open_product_card)
-        self.add_warehouse.clicked.connect(self.open_warehouse_card)
-        self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
+        # self.add_warehouse.clicked.connect(self.open_warehouse_card)
+        # self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
 
         self.retranslateUi()
 
@@ -204,13 +204,13 @@ class MainDialog(QtWidgets.QDialog):
         manager_card_window = Ui_Authorization()
         resp = manager_card_window.exec_()
 
-    def open_warehouse_card(self, arg=None):
-        warehouse = self.comboBox.currentText()
-        if arg and warehouse != 'Stock':
-            arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
-        print(arg)
-        warehouse_card_window = AddWarehouseDialog(arg)
-        resp = warehouse_card_window.exec_()
+    # def open_warehouse_card(self, arg=None):
+    #     warehouse = self.comboBox.currentText()
+    #     if arg and warehouse != 'Stock':
+    #         arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
+    #     print(arg)
+    #     warehouse_card_window = AddWarehouseDialog(arg)
+    #     resp = warehouse_card_window.exec_()
 
     def open_product_card(self, arg):
         if arg is not False:

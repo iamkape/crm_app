@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QLabel, QLineEdit, QMessageBox
 class Ui_Authorization(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
-        self.con = sqlite3.connect('../My/store_database.db')
+        self.con = sqlite3.connect('My/store_database.db')
         self.setObjectName("Authorization")
         self.resize(400, 150)
         self.gridLayoutWidget = QtWidgets.QWidget(self)

@@ -8,7 +8,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data=False):
         print(data)
         super().__init__()
-        self.con = sqlite3.connect('../My/store_database.db')
+        self.con = sqlite3.connect('My/store_database.db')
         self.setObjectName("Client card")
         self.resize(958, 497)
         self.gridLayoutWidget = QtWidgets.QWidget(self)
