@@ -7,10 +7,10 @@ import sqlite3
 from Sergey.client_card import Ui_Dialog
 
 class MainDialog(QtWidgets.QDialog):
-    def __init__(self, user=None):
+    def __init__(self, user=None, path=None):
         super().__init__()
         self.user = user
-        self.con = sqlite3.connect('D:/PycharmProjects/crm_app/my/store_database.db')
+        self.con = sqlite3.connect(path)
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
@@ -179,6 +179,6 @@ class MainDialog(QtWidgets.QDialog):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ui = MainDialog()
+    ui = MainDialog(path='D:/PycharmProjects/crm_app/my/store_database.db')
     ui.show()
     sys.exit(app.exec_())
