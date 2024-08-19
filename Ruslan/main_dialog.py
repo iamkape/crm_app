@@ -4,14 +4,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel
 from functools import partial
 import sqlite3
-from Sergey.client_card import Ui_Dialog
+from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
+
+
 class MainDialog(QtWidgets.QDialog):
-    def __init__(self, user=None, path=None):
+    def __init__(self, user=None):
         super().__init__()
-        self.path = path
         self.user = user
-        self.con = sqlite3.connect(self.path)
+        self.con = sqlite3.connect('../My/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
 
@@ -119,6 +120,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tabWidget.addTab(self.tab_4, "")
 
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
+        self.comboBox.activated.connect(self.insert_data_into_table)
         self.add_client.clicked.connect(self.open_client_card)
         self.add_manager.clicked.connect(self.open_manager_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
@@ -145,7 +147,8 @@ class MainDialog(QtWidgets.QDialog):
         """Заполняет tableWidget данными из текущей таблицы в comboBox."""
         #self.changes_dict = {}  # Обнуляем словарь изменений.
         self.comboBox.clear()
-        self.add_warehouses_to_combobox()
+        self.comboBox.addItems(['Stock'])
+        self.warehouse_count = self.add_warehouses_to_combobox()
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
         with self.con:
@@ -167,6 +170,7 @@ class MainDialog(QtWidgets.QDialog):
     def add_warehouses_to_combobox(self):
         warehouse_names = [el[0] for el in self.con.execute("SELECT name FROM Warehouses").fetchall()]
         self.comboBox.addItems(warehouse_names)
+        return len(warehouse_names) + 1
 
     def get_string_values(self, row):
         column_count = self.table_widgets[self.tabWidget.currentIndex()].columnCount()
@@ -182,17 +186,17 @@ class MainDialog(QtWidgets.QDialog):
     def open_client_card(self, arg):
         if arg:
             arg = self.get_string_values(arg)
-        client_card_window = Ui_Dialog(arg, self.path)
+        client_card_window = Ui_Client_Add(arg)
         resp = client_card_window.exec_()
 
     def open_manager_card(self):
-        manager_card_window = Ui_Authorization(self.path)
+        manager_card_window = Ui_Authorization()
         resp = manager_card_window.exec_()
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ui = MainDialog(path='D:/PycharmProjects/crm_app/my/store_database.db')
+    ui = MainDialog()
     ui.show()
     sys.exit(app.exec_())
