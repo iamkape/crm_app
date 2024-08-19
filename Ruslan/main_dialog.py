@@ -11,8 +11,9 @@ from Sergey.authorization import Ui_Authorization
 
 
 class MainDialog(QtWidgets.QDialog):
-    def __init__(self, user=None):
+    def __init__(self, user=None, manager_id=None):
         super().__init__()
+        self.manager_id = manager_id
         self.user = user
         self.con = sqlite3.connect('../My/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
@@ -214,7 +215,7 @@ class MainDialog(QtWidgets.QDialog):
     def open_product_card(self, arg):
         if arg:
             arg = self.get_string_values(arg)
-        product_card_window = AddProductDialog(arg)
+        product_card_window = AddProductDialog(arg, self.manager_id)
         resp = product_card_window.exec_()
 
 
