@@ -7,10 +7,9 @@ import sqlite3
 class MainDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
-        self.con = sqlite3.connect('My/store_database.db')
+        self.con = sqlite3.connect('my/store_database.db')
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.table_names = ['Transactions_history', 'Customers', 'Stock', 'Products']
-
 
         self.setObjectName("Dialog")
         self.setFixedSize(765, 540)
@@ -25,8 +24,6 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget = QtWidgets.QTableWidget(self.tab)
         self.tableWidget.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(0)
-        self.tableWidget.setRowCount(0)
         self.table_widgets.append(self.tableWidget)
 
         self.new_transaction = QtWidgets.QPushButton(self.tab)
@@ -59,8 +56,6 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_2 = QtWidgets.QTableWidget(self.tab_2)
         self.tableWidget_2.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_2.setObjectName("tableWidget_2")
-        self.tableWidget_2.setColumnCount(0)
-        self.tableWidget_2.setRowCount(0)
         self.table_widgets.append(self.tableWidget_2)
 
         self.lineEdit_2 = QtWidgets.QLineEdit(self.tab_2)
@@ -79,8 +74,6 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_3 = QtWidgets.QTableWidget(self.tab_3)
         self.tableWidget_3.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_3.setObjectName("tableWidget_3")
-        self.tableWidget_3.setColumnCount(0)
-        self.tableWidget_3.setRowCount(0)
         self.table_widgets.append(self.tableWidget_3)
 
         self.lineEdit_3 = QtWidgets.QLineEdit(self.tab_3)
@@ -107,8 +100,6 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_4 = QtWidgets.QTableWidget(self.tab_4)
         self.tableWidget_4.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_4.setObjectName("tableWidget_4")
-        self.tableWidget_4.setColumnCount(0)
-        self.tableWidget_4.setRowCount(0)
         self.table_widgets.append(self.tableWidget_4)
 
         self.lineEdit_4 = QtWidgets.QLineEdit(self.tab_4)
@@ -124,7 +115,6 @@ class MainDialog(QtWidgets.QDialog):
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
 
         self.retranslateUi()
-        self.tabWidget.setCurrentIndex(0)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
