@@ -1,13 +1,14 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
-
-from PyQt5.QtWidgets import QLineEdit, QLabel
+from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
 
 
 class Ui_Client_Add(QtWidgets.QDialog):
-    def __init__(self,data=False):
-        print(data)
+    def __init__(self,data):
         super().__init__()
+        self.data = data
+        self.alert_msg = QtWidgets.QMessageBox()
+        self.alert_msg.setWindowTitle('Information')
         self.con = sqlite3.connect('My/store_database.db')
         self.setObjectName("Client card")
         self.resize(958, 497)
@@ -34,11 +35,13 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
+        self.alert_msg.setWindowTitle('Information')
         self.pushButton_4.clicked.connect(self.closeDialog)
-        self.retranslateUi(data)
+        self.pushButton_2.clicked.connect(self.deleteClient)
+        self.retranslateUi()
 
 
-    def retranslateUi(self,data)->None:
+    def retranslateUi(self)->None:
         """В зависимости от того было ли двойное нажатие или нажатие кнопки
         формирует диалоговое окно"""
         _translate = QtCore.QCoreApplication.translate
@@ -56,16 +59,16 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     lineedit = QLineEdit(self)
                     lineedit.setEnabled(False)
                     lineedit.setPlaceholderText('Autofill')
-                    if data is False:
+                    if self.data is False:
                         lineedit.setText('')
                         self.pushButton_2.setEnabled(False)
                 else: lineedit = QLineEdit(self)
                 label_name = f'label_{i}'
                 label = QLabel(f'{self.name_of_col[i]}')
                 lineedit_name = f'lineedit_{i}'
-                if data is False: lineedit.setText('')
+                if self.data is False: lineedit.setText('')
                 else :
-                    lineedit.setText(data[i])
+                    lineedit.setText(self.data[i])
                     self.pushButton_2.setEnabled(True)
                 setattr(self, label_name, label)
                 setattr(self, lineedit_name, lineedit)
@@ -80,7 +83,17 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 self.setLayout(self.gridLayout)
 
     def deleteClient(self):
-        pass
+        with self.con:
+            try:
+                database_query = (f"DELETE FROM Customers WHERE id={self.data[0]}")
+                self.alert_msg.setText('Are you sure you want to delete this client?')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+                self.alert_msg.exec_()
+                self.alert_msg.accepted(self.con.execute(database_query))
+                QtWidgets.QDialog.close(self)
+                self.alert_msg.rejected(self.alert_msg.close())
+            except Exception as er:
+                print(er)
 
     def saveClient(self):
         pass
