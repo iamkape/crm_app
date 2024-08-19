@@ -6,13 +6,14 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
 from Ruslan.main_dialog import MainDialog
 
 class LoginW(QWidget):
-    def __init__(self):
+    def __init__(self,path=None):
         super().__init__()
+        self.path = path
         self.setWindowTitle("Вход в систему")
         self.setFixedSize(300, 150)
 
         # Подключение к базе данных
-        self.con = sqlite3.connect('My/store_database.db')
+        self.con = sqlite3.connect(path)
 
         # Элементы интерфейса
         self.label_username = QLabel("Имя пользователя:")
@@ -53,11 +54,12 @@ class LoginW(QWidget):
                 self.open_main()
             else:
                 QMessageBox.information(self, "Попробуй снова","Неверный логин или пароль")
-        return self.access_rights # ПЕРЕДАТЬ РУСЛАНУ
+        return self.access_rights
 
     def open_main(self):
         """Если прологинился то открывает главное окно"""
-        self.main_window = MainDialog()
+        print(self.access_rights)
+        self.main_window = MainDialog(self.access_rights,self.path)
         self.main_window.show()
         self.close()
 
@@ -65,7 +67,7 @@ class LoginW(QWidget):
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
-    ui = LoginW()
+    ui = LoginW('My/store_database.db')
     ui.show()
     sys.exit(app.exec_())
     #52dfwf33
