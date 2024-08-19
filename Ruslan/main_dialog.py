@@ -1,7 +1,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel, QTableWidget
 from functools import partial
 import sqlite3
 from Sergey.client_card import Ui_Client_Add
@@ -30,6 +30,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget.setObjectName("tableWidget")
         self.table_widgets.append(self.tableWidget)
+        self.table_widgets[0].setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.new_transaction = QtWidgets.QPushButton(self.tab)
         self.new_transaction.setGeometry(QtCore.QRect(640, 10, 101, 31))
@@ -64,6 +65,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_2.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_2.setObjectName("tableWidget_2")
         self.table_widgets.append(self.tableWidget_2)
+        self.table_widgets[1].setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.lineEdit_2 = QtWidgets.QLineEdit(self.tab_2)
         self.lineEdit_2.setGeometry(QtCore.QRect(150, 20, 113, 21))
@@ -82,6 +84,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_3.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_3.setObjectName("tableWidget_3")
         self.table_widgets.append(self.tableWidget_3)
+        self.table_widgets[2].setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.lineEdit_3 = QtWidgets.QLineEdit(self.tab_3)
         self.lineEdit_3.setGeometry(QtCore.QRect(150, 20, 113, 21))
@@ -98,6 +101,8 @@ class MainDialog(QtWidgets.QDialog):
         self.comboBox = QtWidgets.QComboBox(self.tab_3)
         self.comboBox.setGeometry(QtCore.QRect(10, 20, 131, 22))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItems(['Stock'])
+        self.warehouse_count = self.add_warehouses_to_combobox()
 
         self.tabWidget.addTab(self.tab_3, "")
 
@@ -108,6 +113,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_4.setGeometry(QtCore.QRect(10, 50, 741, 461))
         self.tableWidget_4.setObjectName("tableWidget_4")
         self.table_widgets.append(self.tableWidget_4)
+        self.table_widgets[3].setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.lineEdit_4 = QtWidgets.QLineEdit(self.tab_4)
         self.lineEdit_4.setGeometry(QtCore.QRect(150, 20, 113, 21))
@@ -145,10 +151,8 @@ class MainDialog(QtWidgets.QDialog):
 
     def insert_data_into_table(self) -> None:
         """Заполняет tableWidget данными из текущей таблицы в comboBox."""
-        #self.changes_dict = {}  # Обнуляем словарь изменений.
-        self.comboBox.clear()
-        self.comboBox.addItems(['Stock'])
-        self.warehouse_count = self.add_warehouses_to_combobox()
+        #self.changes_dict = {}  # Обнуляем словарь изменений
+        combobox_id = self.comboBox.currentIndex()
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
         with self.con:
