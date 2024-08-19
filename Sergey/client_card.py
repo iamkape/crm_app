@@ -4,10 +4,10 @@ import sqlite3
 from PyQt5.QtWidgets import QLineEdit, QLabel
 
 
-class Ui_Dialog(QtWidgets.QDialog):
-    def __init__(self):
+class Ui_Client_Add(QtWidgets.QDialog):
+    def __init__(self,data=None):
         super().__init__()
-        self.con = sqlite3.connect('/home/unotuno/python/pet_projects/crm_app/My/store_database.db')
+        self.con = sqlite3.connect('../My/store_database.db')
         self.setObjectName("Client card")
         self.resize(958, 497)
         self.gridLayoutWidget = QtWidgets.QWidget(self)
@@ -34,10 +34,10 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
 
-        self.retranslateUi()
+        self.retranslateUi(data)
 
 
-    def retranslateUi(self):
+    def retranslateUi(self,data):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("Dialog", "Client card"))
         self.pushButton.setText(_translate("Dialog", "upload document"))
@@ -52,10 +52,18 @@ class Ui_Dialog(QtWidgets.QDialog):
                 if i == 0 :
                     lineedit = QLineEdit(self)
                     lineedit.setEnabled(False)
+                    lineedit.setPlaceholderText('Autofill')
+                    if data is False:
+                        lineedit.setText('')
+                        self.pushButton_2.setEnabled(False)
                 else: lineedit = QLineEdit(self)
                 label_name = f'label_{i}'
                 label = QLabel(f'{self.name_of_col[i]}')
                 lineedit_name = f'lineedit_{i}'
+                if data is False: lineedit.setText('')
+                else :
+                    lineedit.setText(data[i].text())
+                    self.pushButton_2.setEnabled(True)
                 setattr(self, label_name, label)
                 setattr(self, lineedit_name, lineedit)
                 self.gridLayout.addWidget(lineedit, i+1, 0, 1, 1)
@@ -75,6 +83,6 @@ class Ui_Dialog(QtWidgets.QDialog):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ui = Ui_Dialog()
+    ui = Ui_Client_Add()
     ui.show()
     sys.exit(app.exec_())

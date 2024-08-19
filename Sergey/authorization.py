@@ -12,10 +12,9 @@ from PyQt5.QtWidgets import QLabel, QLineEdit, QMessageBox
 
 
 class Ui_Authorization(QtWidgets.QDialog):
-    def __init__(self,path=None):
+    def __init__(self):
         super().__init__()
-        self.path = path
-        self.con = sqlite3.connect(path)
+        self.con = sqlite3.connect('../My/store_database.db')
         self.setObjectName("Authorization")
         self.resize(400, 150)
         self.gridLayoutWidget = QtWidgets.QWidget(self)
@@ -103,6 +102,6 @@ class Ui_Authorization(QtWidgets.QDialog):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ui = Ui_Authorization('/home/unotuno/python/pet_projects/crm_app/My/store_database.db')
+    ui = Ui_Authorization()
     ui.show()
     sys.exit(app.exec_())

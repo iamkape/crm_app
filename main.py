@@ -6,14 +6,13 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
 from Ruslan.main_dialog import MainDialog
 
 class LoginW(QWidget):
-    def __init__(self,path=None):
+    def __init__(self):
         super().__init__()
-        self.path = path
         self.setWindowTitle("Вход в систему")
         self.setFixedSize(300, 150)
 
         # Подключение к базе данных
-        self.con = sqlite3.connect(path)
+        self.con = sqlite3.connect('My/store_database.db')
 
         # Элементы интерфейса
         self.label_username = QLabel("Имя пользователя:")
@@ -68,7 +67,7 @@ class LoginW(QWidget):
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
-    ui = LoginW('My/store_database.db')
+    ui = LoginW()
     ui.show()
     sys.exit(app.exec_())
     #52dfwf33
