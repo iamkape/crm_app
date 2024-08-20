@@ -138,21 +138,28 @@ class MainDialog(QtWidgets.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Products"))
 
     def insert_data_into_table(self) -> None:
+        """Функция заполняет таблицу данными"""
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
+        table.setRowCount(0)
+        index_warehouse = self.comboBox.currentIndex()
+        last_index = 0
         with self.con:
             resp = self.con.execute(f"Pragma table_info ({self.table_names[tab_index]})").fetchall()
             columns_list = [i[1] for i in resp]
             table_data = self.con.execute(f"SELECT * FROM {self.table_names[tab_index]}").fetchall()
             rows_list = [str(i[0]) for i in table_data]
-            table.setColumnCount(len(columns_list))  # Указывает количество столбцов.
-            table.setHorizontalHeaderLabels(columns_list)  # Указывает имена столбцов.
-            table.setRowCount(len(rows_list))  # Указывает количество строк.
-            table.setVerticalHeaderLabels(rows_list)  # Указывает имена строк.
+            table.setColumnCount(len(columns_list))
+            table.setHorizontalHeaderLabels(columns_list)
+            table.setVerticalHeaderLabels(rows_list)
             for i in range(len(table_data)):
+                if index_warehouse != table_data[i][2] and tab_index == 2:
+                    continue
+                table.insertRow(last_index)
                 for j in range(len(table_data[i])):
                     item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
-                    self.table_widgets[tab_index].setItem(i, j, item)
+                    table.setItem(last_index, j, item)
+                last_index += 1
 
     def add_warehouses_to_combobox(self):
         """Добавляет имена складов в ComboBox"""
