@@ -40,15 +40,12 @@ class MainDialog(QtWidgets.QDialog):
         self.upload_document = QtWidgets.QPushButton(self.tab)
         self.upload_document.setGeometry(QtCore.QRect(900, 10, 131, 31))
 
-        self.add_document = QtWidgets.QPushButton(self.tab)
-        self.add_document.setGeometry(QtCore.QRect(620, 10, 131, 31))
-        if user != 'super':
-            self.add_document.setEnabled(False)
+        if user == 'super':
+            self.add_document = QtWidgets.QPushButton(self.tab)
+            self.add_document.setGeometry(QtCore.QRect(620, 10, 131, 31))
 
-        self.add_manager = QtWidgets.QPushButton(self.tab)
-        self.add_manager.setGeometry(QtCore.QRect(760, 10, 131, 31))
-        if user != 'super':
-            self.add_manager.setEnabled(False)
+            self.add_manager = QtWidgets.QPushButton(self.tab)
+            self.add_manager.setGeometry(QtCore.QRect(760, 10, 131, 31))
 
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
         self.lineEdit.setGeometry(QtCore.QRect(180, 20, 153, 21))
@@ -114,11 +111,12 @@ class MainDialog(QtWidgets.QDialog):
         self.comboBox.activated.connect(self.insert_data_into_table)
         self.add_client.clicked.connect(self.open_client_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
-        self.add_manager.clicked.connect(self.open_manager_card)
         self.add_product.clicked.connect(self.open_product_card)
         self.tableWidget_4.cellDoubleClicked.connect(self.open_product_card)
         self.add_warehouse.clicked.connect(self.open_warehouse_card)
         self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
+        if user == 'super':
+            self.add_manager.clicked.connect(self.open_manager_card)
 
         self.retranslateUi()
 
@@ -127,8 +125,9 @@ class MainDialog(QtWidgets.QDialog):
         self.setWindowTitle(_translate("Dialog", "CRM Application"))
         self.new_transaction.setText(_translate("Dialog", "New transaction"))
         self.upload_document.setText(_translate("Dialog", "Upload document"))
-        self.add_document.setText(_translate("Dialog", "Add document"))
-        self.add_manager.setText(_translate("Dialog", "Add manager"))
+        if self.user == 'super':
+            self.add_document.setText(_translate("Dialog", "Add document"))
+            self.add_manager.setText(_translate("Dialog", "Add manager"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Operations"))
         self.add_client.setText(_translate("Dialog", "Add client"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Сlients"))
