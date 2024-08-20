@@ -200,11 +200,12 @@ class MainDialog(QtWidgets.QDialog):
         manager_card_window = Ui_Authorization()
         manager_card_window.exec_()
 
-    def open_warehouse_card(self, arg):
+    def open_warehouse_card(self, arg: bool):
         """Открывает карточку склада и передает False (если функция вызвана по нажатию PushButton),
         либо кортеж всех значений из текущего склада выбранного в ComboBox."""
         warehouse = self.comboBox.currentText()
-        arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
+        if arg:
+            arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
         warehouse_card_window = AddWarehouseDialog(arg)
         warehouse_card_window.exec_()
 
@@ -217,9 +218,9 @@ class MainDialog(QtWidgets.QDialog):
         product_card_window.exec_()
         self.insert_data_into_table()
 
-    def count_quantity_products(self):
+    def count_quantity_products(self) -> list:
         """Подсчитывает общее количество товаров на складах"""
-        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'не придумал' FROM Stock
+        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'Не придумал' FROM Stock
                                 GROUP BY product_id''').fetchall()
         return resp
 
