@@ -139,6 +139,10 @@ class MainDialog(QtWidgets.QDialog):
 
     def insert_data_into_table(self) -> None:
         """Функция заполняет таблицу данными"""
+        self.edit_warehouse.setEnabled(True)
+        if self.comboBox.currentText() == 'Stock':
+            self.edit_warehouse.setEnabled(False)
+
         tab_index = self.tabWidget.currentIndex()
         table = self.table_widgets[tab_index]
         table.setRowCount(0)
