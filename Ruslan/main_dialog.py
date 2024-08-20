@@ -139,25 +139,28 @@ class MainDialog(QtWidgets.QDialog):
 
     def insert_data_into_table(self) -> None:
         """Функция заполняет таблицу данными"""
+        tab_index = self.tabWidget.currentIndex()  # Индекс вкладки.
+        table = self.table_widgets[tab_index]  # Выбор tableWidget.
+        table.setRowCount(0)  # Обнуление таблицы.
+        index_warehouse = self.comboBox.currentIndex()  # Индекс склада в combobox.
         self.edit_warehouse.setEnabled(True)
-        if self.comboBox.currentText() == 'Stock':
+        if index_warehouse == 0:
             self.edit_warehouse.setEnabled(False)
-
-        tab_index = self.tabWidget.currentIndex()
-        table = self.table_widgets[tab_index]
-        table.setRowCount(0)
-        index_warehouse = self.comboBox.currentIndex()
+            self.count_quantity_products()
         last_index = 0
         with self.con:
             resp = self.con.execute(f"Pragma table_info ({self.table_names[tab_index]})").fetchall()
             columns_list = [i[1] for i in resp]
             table_data = self.con.execute(f"SELECT * FROM {self.table_names[tab_index]}").fetchall()
+            if tab_index == 2 and index_warehouse == 0:
+                columns_list = ['id', 'count', 'Не придумал']
+                table_data = self.count_quantity_products()
             rows_list = [str(i[0]) for i in table_data]
             table.setColumnCount(len(columns_list))
             table.setHorizontalHeaderLabels(columns_list)
             table.setVerticalHeaderLabels(rows_list)
             for i in range(len(table_data)):
-                if index_warehouse != table_data[i][2] and tab_index == 2:
+                if index_warehouse != table_data[i][2] and tab_index == 2 and index_warehouse > 0:
                     continue
                 table.insertRow(last_index)
                 for j in range(len(table_data[i])):
@@ -201,8 +204,7 @@ class MainDialog(QtWidgets.QDialog):
         """Открывает карточку склада и передает False (если функция вызвана по нажатию PushButton),
         либо кортеж всех значений из текущего склада выбранного в ComboBox."""
         warehouse = self.comboBox.currentText()
-        if arg and warehouse != 'Stock':
-            arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
+        arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
         warehouse_card_window = AddWarehouseDialog(arg)
         warehouse_card_window.exec_()
 
@@ -214,6 +216,12 @@ class MainDialog(QtWidgets.QDialog):
         product_card_window = AddProductDialog(arg, self.manager_id)
         product_card_window.exec_()
         self.insert_data_into_table()
+
+    def count_quantity_products(self):
+        """Подсчитывает общее количество товаров на складах"""
+        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'не придумал' FROM Stock
+                                GROUP BY product_id''').fetchall()
+        return resp
 
 
 if __name__ == "__main__":
