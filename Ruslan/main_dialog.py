@@ -170,6 +170,7 @@ class MainDialog(QtWidgets.QDialog):
 
     def add_warehouses_to_combobox(self):
         """Добавляет имена складов в ComboBox"""
+        self.comboBox.clear()
         self.comboBox.addItems(['Stock'])
         warehouse_names = [el[0] for el in self.con.execute("SELECT name FROM Warehouses").fetchall()]
         self.comboBox.addItems(warehouse_names)
@@ -208,6 +209,7 @@ class MainDialog(QtWidgets.QDialog):
             arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
         warehouse_card_window = AddWarehouseDialog(arg)
         warehouse_card_window.exec_()
+        self.add_warehouses_to_combobox()
 
     def open_product_card(self, arg):
         """Открывает карточку продукта и передает первым аргументом False (если функция вызвана по нажатию PushButton),
@@ -220,7 +222,7 @@ class MainDialog(QtWidgets.QDialog):
 
     def count_quantity_products(self) -> list:
         """Подсчитывает общее количество товаров на складах"""
-        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'Не придумал' FROM Stock
+        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'z' FROM Stock
                                 GROUP BY product_id''').fetchall()
         return resp
 
