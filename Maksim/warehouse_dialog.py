@@ -33,23 +33,19 @@ class AddWarehouseDialog(QtWidgets.QDialog):
             self.form_layout.setContentsMargins(0, 0, 0, 0)
             self.form_layout.setSpacing(10)
 
-            for col_name in self.column_names:
+            for i, col_name in enumerate(self.column_names):
                 if col_name == 'id':
-                    continue 
+                    continue
 
                 label = QtWidgets.QLabel(col_name.replace('_', ' ').capitalize(), self)
                 line_edit = QtWidgets.QLineEdit(self)
+                if self.existing_data and i < len(self.existing_data):
+                    line_edit.setText(self.existing_data[i])
+
                 self.line_edits[col_name] = line_edit
                 self.form_layout.addRow(label, line_edit)
 
             self.vertical_layout.addLayout(self.form_layout)
-
-            if self.existing_data:
-                for i, col_name in enumerate(self.column_names):
-                    if col_name == 'id':
-                        continue
-                    if i < len(self.existing_data):
-                        self.line_edits[col_name].setText(self.existing_data[i])
 
         self.message_area = QtWidgets.QPlainTextEdit(self)
         self.message_area.setReadOnly(True)
@@ -74,7 +70,6 @@ class AddWarehouseDialog(QtWidgets.QDialog):
 
     def save_warehouse(self):
         data = {col_name: self.line_edits[col_name].text() for col_name in self.column_names if col_name != 'id'}
-
         columns = ', '.join(data.keys())
         placeholders = ', '.join('?' * len(data))
         values = tuple(data.values())
