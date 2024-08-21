@@ -2,8 +2,8 @@
 # Name: Ruslan Yarmak.
 # Contacts: (Phone number: +375297242242, Telegram: @ruslanyarmak).
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QTabWidget, QWidget, QVBoxLayout, QLabel, QTableWidget
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QTableWidget
 from functools import partial
 import sqlite3
 from Sergey.client_card import Ui_Client_Add
@@ -146,15 +146,13 @@ class MainDialog(QtWidgets.QDialog):
         self.edit_warehouse.setEnabled(True)
         if index_warehouse == 0:
             self.edit_warehouse.setEnabled(False)
-            self.count_quantity_products()
         last_index = 0
         with self.con:
             resp = self.con.execute(f"Pragma table_info ({self.table_names[tab_index]})").fetchall()
             columns_list = [i[1] for i in resp]
             table_data = self.con.execute(f"SELECT * FROM {self.table_names[tab_index]}").fetchall()
             if tab_index == 2 and index_warehouse == 0:
-                columns_list = ['id', 'count', 'Не придумал']
-                table_data = self.count_quantity_products()
+                columns_list, table_data = self.count_quantity_products()
             rows_list = [str(i[0]) for i in table_data]
             table.setColumnCount(len(columns_list))
             table.setHorizontalHeaderLabels(columns_list)
@@ -220,11 +218,20 @@ class MainDialog(QtWidgets.QDialog):
         product_card_window.exec_()
         self.insert_data_into_table()
 
-    def count_quantity_products(self) -> list:
-        """Подсчитывает общее количество товаров на складах"""
-        resp = self.con.execute('''SELECT product_id, SUM(quantity), 'z' FROM Stock
-                                GROUP BY product_id''').fetchall()
-        return resp
+    def count_quantity_products(self):
+        """Формирует данные для заполнения нулевого склада"""
+        resp = self.con.execute('''SELECT product_id, name, sku, unit_of_measurement,
+                                      SUM (quantity) AS total_quantity, 
+                                      MAX (expiration_date) AS exp_date
+                                     FROM Products
+                                     JOIN Stock
+                                       ON Products.id = Stock.product_id
+                                    GROUP BY product_id
+                                    ORDER BY exp_date
+                                    ''')
+        data = resp.fetchall()
+        columns = [el[0] for el in resp.description]
+        return columns, data
 
 
 if __name__ == "__main__":
