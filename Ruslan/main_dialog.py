@@ -182,7 +182,7 @@ class MainDialog(QtWidgets.QDialog):
             for i in range(len(table_data)):
                 if index_warehouse != table_data[i][2] and tab_index == 2 and index_warehouse > 0:
                     continue
-                if search_txt not in table_data[i][1].lower():
+                if search_txt not in str(table_data[i][1]).lower():
                     continue
                 table.insertRow(last_index)
                 for j in range(len(table_data[i])):
