@@ -136,6 +136,8 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget_4.cellDoubleClicked.connect(self.open_product_card)
         self.add_warehouse.clicked.connect(self.open_warehouse_card)
         self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
+        self.new_transaction.clicked.connect(self.open_transaction_card)
+        self.tableWidget.cellDoubleClicked.connect(self.open_transaction_card)
         if user == 'super':
             self.add_manager.clicked.connect(self.open_manager_card)
 
@@ -256,6 +258,15 @@ class MainDialog(QtWidgets.QDialog):
         data = resp.fetchall()
         columns = [el[0] for el in resp.description]
         return columns, data
+
+    def open_transaction_card(self, arg):
+        """Открывает карточку операции и передает первым аргументом False (если функция вызвана по нажатию PushButton),
+        либо список всех значений выбранной строки (если функция вызвана двойным нажатием по TableWidget)."""
+        if arg is not False:
+            arg = self.get_string_values(arg)
+        #transaction_card_window = AddProductDialog(arg)
+        #transaction_card_window.exec_()
+        self.insert_data_into_table()
 
 
 if __name__ == "__main__":
