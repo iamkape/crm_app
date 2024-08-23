@@ -1,130 +1,167 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from dialog1 import Ui_Dialog
-import sqlite3
+import sys
+from functools import partial
 
-class Ui_MainWindow(object):
-    def openDialog(self):
-        self.dialog = QtWidgets.QDialog()
-        self.ui = Ui_Dialog()
-        self.ui.setupUi(self.dialog)
-        self.dialog.show()
+from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QStackedLayout,
+    QVBoxLayout,
+    QWidget,
+    QLineEdit,
+    QDialog
+)
 
+class Ui_Dialog3(QtWidgets.QDialog):
+    def __init__(self, table_name):
+        super().__init__()
+        data_type = {'acceptance': ['INTEGER', 'INTEGER', 'INTEGER', 'DATETIME', 'VARCHAR(50)', 'INTEGER'],
+          'sale': ['INTEGER', 'INTEGER', 'INTEGER', 'DATETIME', 'INTEGER', 'VARCHAR(50)', 'INTEGER'],
+          'write-off': ['INTEGER','INTEGER','INTEGER','DATETIME','VARCHAR(50)','INTEGER'],
+          'movement': ['INTEGER', 'INTEGER','INTEGER', 'INTEGER', 'DATETIME','VARCHAR(50)','INTEGER']}
+        self.setObjectName("Dialog")
+        self.resize(450, 0)
+        self.buttonBox = QtWidgets.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(40, 240, 341, 32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
 
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(782, 473)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.comboBox = QtWidgets.QComboBox(self.centralwidget)
-        self.comboBox.setGeometry(QtCore.QRect(20, 10, 111, 31))
-        self.comboBox.setObjectName("comboBox")
+        self.columns_list = {
+            'acceptance': ['product_id', 'warehouse_to', 'quantity', 'transaction_date', 'status', 'employee_id'],
+            'sale': ['product_id', 'warehouse_from', 'quantity', 'transaction_date', 'customer_id', 'status',
+                     'employee_id'],
+            'write-off': ['product_id', 'warehouse_from', 'quantity', 'transaction_date', 'status', 'employee_id'],
+            'movement': ['product_id', 'warehouse_from', 'warehouse_to', 'quantity', 'transaction_date', 'status',
+                         'employee_id']}
+        self.line_edits = []
+        layout = QVBoxLayout()
+        for i in range(len(self.columns_list[table_name])):
+            h_layout = QHBoxLayout()
+            line_edit = QLineEdit()
+            line_edit.setPlaceholderText("Поле для ввода")
+            self.line_edits.append(line_edit)
+            label1 = QLabel(self.columns_list[table_name][i])
+            label2 = QLabel(data_type[table_name][i])
+            h_layout.addWidget(line_edit)
+            h_layout.addWidget(label1)
+            h_layout.addWidget(label2)
+            h_layout.setAlignment(line_edit, Qt.AlignLeft)
+            h_layout.setAlignment(label1, Qt.AlignLeft)
+            h_layout.setAlignment(label2, Qt.AlignLeft)
+            layout.addLayout(h_layout)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
 
+        self.retranslateUi()
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
 
-        self.trans = ['acceptance', 'sale', 'write-off', 'movement']
-        self.comboBox.addItems(self.trans)
-
-        # self.comboBox.currentIndexChanged.connect(self.selected_changeIndex)
-
-
-        self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 60, 751, 231))
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(0)
-        self.tableWidget.setRowCount(0)
-
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.openDialog())
-        self.pushButton.setGeometry(QtCore.QRect(670, 10, 93, 28))
-
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        self.pushButton.setFont(font)
-        self.pushButton.setObjectName("pushButton")
-
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 782, 26))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-        self.con = sqlite3.connect('store_database.db')
-        self.table_name = 'Transactions_history'
-
-        with self.con:
-            resp = self.con.execute(f"Pragma table_info ({self.table_name})").fetchall()
-            self.columns_list = [i[1] for i in resp]
-            # print(self.columns_list)
-            table_data = self.con.execute(f"SELECT * FROM {self.table_name}").fetchall()
-            self.tableWidget.setColumnCount(len(self.columns_list))
-            self.tableWidget.setHorizontalHeaderLabels(self.columns_list)
-            self.tableWidget.setRowCount(len(table_data))
-            for i in range(len(table_data)):
-                for j in range(len(table_data[i])):
-                    item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
-                    self.tableWidget.setItem(i, j, item)
-
-    # def selected_changeIndex(self, index):
-    #     self.columns = ['id', 'transaction_type', 'product_id', 'warehouse_from', 'warehouse_to', 'quantity', 'transaction_date', 'customer_id', 'status', 'employee_id']
-    #     # dicty = {}
-    #     self.col = []
-    #     with self.con:
-    #         table_data = []
-    #         if self.comboBox.currentIndex() == 0:
-    #             table_data = self.con.execute(f"SELECT * FROM {self.table_name} WHERE transaction_type = {self.trans[0]}").fetchall()
-    #             print(table_data)
-    #             self.col = ['id', 'transaction_type', 'product_id', 'warehouse_to', 'quantity',
-    #                             'transaction_date', 'status', 'employee_id']
-    #         if self.comboBox.currentIndex() == 1:
-    #             table_data = self.con.execute(
-    #                 f"SELECT * FROM {self.table_name} WHERE transaction_type = {self.trans[1]}").fetchall()
-    #             print(table_data)
-    #             self.col = ['id', 'transaction_type', 'product_id', 'warehouse_from', 'quantity',
-    #                             'transaction_date', 'customer_id', 'status', 'employee_id']
-    #         if self.comboBox.currentIndex() == 2:
-    #             table_data = self.con.execute(
-    #                 f"SELECT * FROM {self.table_name} WHERE transaction_type = {self.trans[2]}").fetchall()
-    #             print(table_data)
-    #             self.col = ['id', 'transaction_type', 'product_id', 'warehouse_from', 'warehouse_to', 'quantity',
-    #                             'transaction_date', 'status', 'employee_id']
-    #         if self.comboBox.currentIndex() == 3:
-    #             table_data = self.con.execute(
-    #                 f"SELECT * FROM {self.table_name} WHERE transaction_type = {self.trans[3]}").fetchall()
-    #             print(table_data)
-    #             self.col = ['id', 'transaction_type', 'product_id', 'warehouse_from', 'warehouse_to', 'quantity',
-    #                             'transaction_date', 'status', 'employee_id']
-    #         # self.con = str(self.col)
-            # print(self.con)
-            # table_data = self.con.execute(f"SELECT {self.con} FROM {self.table_name}").fetchall()
-            # self.tableWidget.clear()
-            # self.tableWidget.setColumnCount(len(self.columns))
-            # self.tableWidget.setHorizontalHeaderLabels(self.columns)
-            # self.tableWidget.setRowCount(len(table_data))
-            # for i in range(len(table_data)):
-            #     for j in range(len(table_data[i])):
-            #         item = QtWidgets.QTableWidgetItem(str(table_data[i][j]))
-            #         self.tableWidget.setItem(i, j, item)
-
-
-        # print(index)
-        # print(self.comboBox.currentIndex())
-        # print(self.comboBox.currentText())
-
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "New"))
+        self.setWindowTitle(_translate("Dialog", "Dialog"))
+
+    def exec_(self):
+        super().exec_()
+        return [line.text() for line in self.line_edits]
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("New transaction")
+
+        pagelayout = QVBoxLayout()
+        button_layout = QHBoxLayout()
+        self.stacklayout = QStackedLayout()
+
+        pagelayout.addLayout(button_layout)
+        pagelayout.addLayout(self.stacklayout)
+
+        self.label = QLabel("Choose transaction")
+        self.label.setGeometry(QtCore.QRect(50, 50, 100, 20))
+        self.label.setStyleSheet("font: 75 12pt \"MS Shell Dlg 2\";")
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+        self.stacklayout.addWidget(self.label)
+
+
+        btn = QPushButton("acceptance")
+        btn.pressed.connect(self.activate_tab_1)
+        button_layout.addWidget(btn)
+        self.stacklayout.addWidget(Ui_Dialog3('acceptance'))
+
+        btn = QPushButton("sale")
+        btn.pressed.connect(self.activate_tab_2)
+        button_layout.addWidget(btn)
+        self.stacklayout.addWidget(Ui_Dialog3('sale'))
+
+        btn = QPushButton("write-off")
+        btn.pressed.connect(self.activate_tab_3)
+        button_layout.addWidget(btn)
+        self.stacklayout.addWidget(Ui_Dialog3('write-off') )
+
+        btn = QPushButton("movement")
+        btn.pressed.connect(self.activate_tab_4)
+        button_layout.addWidget(btn)
+        self.stacklayout.addWidget(Ui_Dialog3('movement'))
+
+        widget = QWidget()
+        widget.setLayout(pagelayout)
+        self.setCentralWidget(widget)
+        self.resp = []
+
+    def activate_tab_1(self):
+        self.stacklayout.setCurrentIndex(1)
+        self.resp = self.stacklayout.currentWidget().exec_()
+        # self.stacklayout.currentWidget().close()
+        if '' not in self.resp:
+            self.resp.insert(0, 'acceptance')
+            self.resp.insert(2, None)
+            self.resp.insert(6, None)
+            print(self.resp)
+        self.close()
+
+    def activate_tab_2(self):
+        self.stacklayout.setCurrentIndex(2)
+        self.resp = self.stacklayout.currentWidget().exec_()
+        if '' not in self.resp:
+            self.resp.insert(0, 'sale')
+            self.resp.insert(3, None)
+            print(self.resp)
+        self.close()
+
+    def activate_tab_3(self):
+        self.stacklayout.setCurrentIndex(3)
+        self.resp = self.stacklayout.currentWidget().exec_()
+        if '' not in self.resp:
+            self.resp.insert(0, 'write-off')
+            self.resp.insert(3, None)
+            self.resp.insert(6, None)
+            print(self.resp)
+        self.close()
+
+    def activate_tab_4(self):
+        self.stacklayout.setCurrentIndex(4)
+        self.resp = self.stacklayout.currentWidget().exec_()
+        if '' not in self.resp:
+            self.resp.insert(0, 'movement')
+            self.resp.insert(6, None)
+            print(self.resp)
+        self.close()
+
+    def data(self):
+        super().exec_()
+        if '' not in self.resp:
+            return self.resp
+
+
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+
+app.exec()
