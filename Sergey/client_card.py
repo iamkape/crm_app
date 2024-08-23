@@ -1,11 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 import re
-from PyQt5.QtCore import QRegExp
+from docxtpl import DocxTemplate
+from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
-from setuptools.config.pyprojecttoml import validate
-
+import subprocess, os, platform
 
 class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data):
@@ -40,10 +40,13 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
         self.alert_msg.setWindowTitle('Information')
+        self.pushButton.clicked.connect(self.uploadDoc)
         self.pushButton_3.clicked.connect(self.saveClient)
         self.pushButton_4.clicked.connect(self.closeDialog)
         self.pushButton_2.clicked.connect(self.deleteClient)
         self.retranslateUi()
+        self.fill_data()
+        self.fullTable()
 
 
     def retranslateUi(self)->None:
@@ -67,6 +70,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     if self.data is False:
                         lineedit.setText('')
                         self.pushButton_2.setEnabled(False)
+                        self.pushButton.setEnabled(False)
                 elif i in (1,2):
                     lineedit = QLineEdit(self)
                     validator = QRegExpValidator(QRegExp('[a-zA-Z]+'))
@@ -83,7 +87,8 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 else :
                     lineedit.setText(self.data[i])
                     self.pushButton_2.setEnabled(True)
-                self.lineedit_data.append(lineedit.text())
+                    self.pushButton.setEnabled(True)
+                self.lineedit_data.append(lineedit)
                 setattr(self, label_name, label)
                 setattr(self, lineedit_name, lineedit)
                 self.gridLayout.addWidget(lineedit, i+1, 0, 1, 1)
@@ -96,6 +101,24 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     self.gridLayout.addWidget(label, i - 3, 6, 1, 1)
                 self.setLayout(self.gridLayout)
 
+    def fullTable(self):
+        if self.data is not False:
+            with self.con:
+                base_req = ("SELECT * FROM Transactions_history"
+                            " JOIN Customers"
+                            " ON Transactions_history.customer_id = Customers.id "
+                            f"WHERE Customers.id = {self.data[0]}")
+                row_text = self.con.execute(base_req).fetchall() #[ () ]
+                respon = self.con.execute("Pragma table_info ('Transactions_history')").fetchall()
+                name_of_col = [i[1] for i in respon]
+                self.tableWidget.setHorizontalHeaderLabels(name_of_col)
+                self.tableWidget.setRowCount(len(row_text))
+                self.tableWidget.setColumnCount(len(name_of_col))
+                for x in range(len(row_text)):
+                    for y in range(len(row_text[x])):
+                        item = QtWidgets.QTableWidgetItem(str(row_text[x][y]))
+                        item.setFlags(item.flags() & ~ Qt.ItemIsEditable)
+                        self.tableWidget.setItem(x, y, item)
 
     def deleteClient(self)->None:
         """Удаляет по id клиента с подтверждением действительно ли хочет удалить"""
@@ -104,46 +127,72 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 database_query = (f"DELETE FROM Customers WHERE id={self.data[0]}")
                 self.alert_msg.setText('Are you sure you want to delete this client?')
                 self.alert_msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-                self.alert_msg.exec_()
-                self.alert_msg.accepted(self.con.execute(database_query))
-                self.alert_msg.rejected(self.alert_msg.close())
-                QtWidgets.QDialog.close(self)
+                res = self.alert_msg.exec_()
+                if res == QMessageBox.Ok:
+                    self.con.execute(database_query)
+                    self.alert_msg.close()
+                    QtWidgets.QDialog.close(self)
+                else:  self.alert_msg.close()
+
             except Exception as er:
-                self.alert_msg.setText(f'Something wrong {er}')
-                self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                self.alert_msg.exec_()
+                print(f'Error : {er}')
+                # self.alert_msg.setText(f'Something wrong {er}')
+                # self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                # self.alert_msg.exec_()
+
+
 
     def saveClient(self)->None:
         """Сохраняет данные нового клиента
         Проверяет валидность email"""
-        for i in range(len(self.lineedit_data)):
-            if i == 3:
-                pattern = re.compile(r"^\S+@\S+\.\S+$")
-                is_email = pattern.match(self.lineedit_data[i])
-                if is_email is None:
-                    self.alert_msg.setText('Check email address (user@example.com)')
+        line_text = []
+        pattern = re.compile(r"^\S+@\S+\.\S+$")
+        is_email = pattern.match(self.lineedit_data[3].text())
+        if is_email is None:
+            self.alert_msg.setText('Check email address (user@example.com)')
+            self.alert_msg.setStandardButtons(QMessageBox.Ok)
+            self.alert_msg.exec_()
+        else:
+            for i in range(len(self.lineedit_data)):
+                line_text.append(self.lineedit_data[i].text())
+            with self.con:
+                val = ', '.join('?' * (len(self.name_of_col)))
+                column = ', '.join(self.name_of_col)
+                try:
+                    query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
+                    self.con.execute(query_database, line_text)
+                    self.alert_msg.setText('Your data is saved!')
                     self.alert_msg.setStandardButtons(QMessageBox.Ok)
                     self.alert_msg.exec_()
+                except Exception as er:
+                    self.alert_msg.setText(f'Error {er}')
+                    self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                    self.alert_msg.exec_()
+                    print(er)
+                QtWidgets.QDialog.close(self)
+
+
+
+    def fill_data(self):
         with self.con:
-            val = ', '.join('?' * (len(self.name_of_col[1:])))
-            column = ', '.join(self.name_of_col[1:])
-            try:
-                print(self.lineedit_data, '133')
-                print(self.lineedit_data[1:], '134')
-                query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
-                print(query_database)
-                self.con.execute(query_database, self.lineedit_data[1:])
-                self.alert_msg.setText('Your data is saved!')
-                self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                self.alert_msg.exec_()
-            except Exception as er:
-                self.alert_msg.setText(f'Error {er}')
-                self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                self.alert_msg.exec_()
-                print(er)
-        QtWidgets.QDialog.close(self)
-    def uploadDoc(self):
-        pass
+            skeleton = self.con.execute("SELECT * FROM Transactions_history"
+                        " JOIN Customers"
+                        " ON Transactions_history.customer_id = Customers.id "
+                        f"WHERE Customers.id = {self.data[0]}").fetchall()
+            print(skeleton,'skel')
+
+
+    def uploadDoc(self)->None:
+        """Производит выгрузку документа"""
+        filepath = 'My/shablon.docx'
+        data_for_doc = self.saveClient()
+        doc = DocxTemplate(filepath)
+        doc.render(data_for_doc)
+        doc.save('My/newDOc.docx')
+        if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
+        elif platform.system() == 'Windows': os.startfile(filepath) # Windows
+        else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants
+
 
     def closeDialog(self)->None:
         QtWidgets.QDialog.close(self)

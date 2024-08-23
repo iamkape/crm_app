@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib
-from os import access
+
 
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QMessageBox, QApplication
 from Ruslan.main_dialog import MainDialog
@@ -56,13 +56,39 @@ class LoginW(QWidget):
             else:
                 QMessageBox.information(self, "Попробуй снова","Неверный логин или пароль")
 
+    def get_names(self, table):
+        col_names = []
+        with self.con:
+            names = self.con.execute(f'PRAGMA table_info ("{table}") ').fetchall()
+            for i in names:
+                if 'id' in i[1]:
+                    continue
+                else: col_names.append(i[1])
+        return col_names
 
 
     def open_main(self, rights:list, id:list)->None:
         """Если прологинился то открывает главное окно"""
         access_rights = (', '.join(*rights))
         manager_id = [str(i) for i in id]
-        self.main_window = MainDialog(access_rights, *manager_id)
+        pattern_doc = {
+                         'Customers' : self.get_names('Customers'),
+                         'Employees' : self.get_names('Employees'),
+                         'Products' : self.get_names('Products'),
+                         'Stock' : self.get_names('Stock'),
+                         'Transactions_history' : self.get_names('Transactions_history'),
+                         'Warehouses' : self.get_names('Warehouses')
+                      }
+        print(pattern_doc)
+        # from docx import Document
+        # doc = Document()
+        # doc.add_heading("Вот доступные поля для создания шаблона", level=1)
+        # for k, v in pattern_doc.items():
+        #     doc.add_paragraph('')
+        #     doc.add_paragraph(f'{k}  -- {", ".join(v)}')
+        #     doc.add_paragraph('')
+        # doc.save('My/shablon.docx')
+        self.main_window = MainDialog(access_rights, *manager_id, pattern_doc)
         self.main_window.show()
         self.close()
 
