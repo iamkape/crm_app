@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets
 import sqlite3
+from .db_class import DatabaseManager
 
 class AddWarehouseDialog(QtWidgets.QDialog):
     def __init__(self, existing_data=None):
+        self.db = DatabaseManager('My/store_database.db')
         super().__init__()
         self.existing_data = existing_data
         print("Existing data:", self.existing_data)
@@ -70,6 +72,12 @@ class AddWarehouseDialog(QtWidgets.QDialog):
 
     def save_warehouse(self):
         data = {col_name: self.line_edits[col_name].text() for col_name in self.column_names if col_name != 'id'}
+
+        valid, message = self.db.validate_data('Warehouses', data)
+        if not valid:
+            self.message_area.setPlainText(message)
+            return
+
         columns = ', '.join(data.keys())
         placeholders = ', '.join('?' * len(data))
         values = tuple(data.values())

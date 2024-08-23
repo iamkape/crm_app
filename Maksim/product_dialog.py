@@ -1,9 +1,11 @@
 from PyQt5 import QtWidgets
 import sqlite3
+from .db_class import DatabaseManager
 
 class AddProductDialog(QtWidgets.QDialog):
     def __init__(self, existing_data=None, manager_id=None):
         super().__init__()
+        self.db = DatabaseManager('My/store_database.db')
         self.manager_id = manager_id
         self.existing_data = existing_data
         print("Existing data:", self.existing_data)
@@ -76,6 +78,12 @@ class AddProductDialog(QtWidgets.QDialog):
     def save_product(self):
         data = {col_name: self.line_edits[col_name].text() for col_name in self.column_names if col_name not in ['id', 'employee_id']}
         data['employee_id'] = self.manager_id
+
+        valid, message = self.db.validate_data('Products', data)
+
+        if not valid:
+            self.message_area.setPlainText(message)
+            return
 
         columns = ', '.join(data.keys())
         placeholders = ', '.join('?' * len(data))
