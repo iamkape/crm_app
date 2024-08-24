@@ -129,6 +129,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget.cellDoubleClicked.connect(self.open_transaction_card)
         if user == 'super':
             self.add_manager.clicked.connect(self.open_manager_card)
+            self.add_document.clicked.connect(self.open_window_document)
 
         self.retranslateUi()
 
@@ -272,6 +273,15 @@ class MainDialog(QtWidgets.QDialog):
         #transaction_card_window.exec_()
         self.insert_data_into_table()
 
+    def open_window_document(self):
+        from docx import Document
+        doc = Document()
+        doc.add_heading("Вот доступные поля для создания шаблона", level=1)
+        for k, v in self.pattern_doc.items():
+            doc.add_paragraph('')
+            doc.add_paragraph(f'{k}  -- {", ".join(v)}')
+            doc.add_paragraph('')
+        doc.save('My/shablon.docx')
 
 if __name__ == "__main__":
     import sys
