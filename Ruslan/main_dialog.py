@@ -42,9 +42,6 @@ class MainDialog(QtWidgets.QDialog):
         self.upload_document = QtWidgets.QPushButton(self.tab)
         self.upload_document.setGeometry(QtCore.QRect(900, 10, 131, 31))
 
-        self.search = QtWidgets.QPushButton(self.tab, text='Search')
-        self.search.setGeometry(QtCore.QRect(345, 20, 131, 21))
-
         if user == 'super':
             self.add_document = QtWidgets.QPushButton(self.tab)
             self.add_document.setGeometry(QtCore.QRect(620, 10, 131, 31))
@@ -73,9 +70,6 @@ class MainDialog(QtWidgets.QDialog):
         self.add_client = QtWidgets.QPushButton(self.tab_2)
         self.add_client.setGeometry(QtCore.QRect(1040, 10, 131, 31))
 
-        self.search_2 = QtWidgets.QPushButton(self.tab_2, text='Search')
-        self.search_2.setGeometry(QtCore.QRect(345, 20, 131, 21))
-
         self.tabWidget.addTab(self.tab_2, "")
 
 # -------------Вкладка-Клиентов----------------------------------------------------------------------------------------
@@ -95,9 +89,6 @@ class MainDialog(QtWidgets.QDialog):
 
         self.edit_warehouse = QtWidgets.QPushButton(self.tab_3)
         self.edit_warehouse.setGeometry(QtCore.QRect(900, 10, 131, 31))
-
-        self.search_3 = QtWidgets.QPushButton(self.tab_3, text='Search')
-        self.search_3.setGeometry(QtCore.QRect(345, 20, 131, 21))
 
         self.comboBox = QtWidgets.QComboBox(self.tab_3)
         self.comboBox.setGeometry(QtCore.QRect(10, 20, 161, 21))
@@ -120,17 +111,14 @@ class MainDialog(QtWidgets.QDialog):
         self.add_product = QtWidgets.QPushButton(self.tab_4)
         self.add_product.setGeometry(QtCore.QRect(1040, 10, 131, 31))
 
-        self.search_4 = QtWidgets.QPushButton(self.tab_4, text='Search')
-        self.search_4.setGeometry(QtCore.QRect(345, 20, 131, 21))
-
         self.tabWidget.addTab(self.tab_4, "")
 # --------------Сигналы-------------------------------------------------------------------------------------------------
         self.tabWidget.currentChanged.connect(self.insert_data_into_table)
         self.comboBox.activated.connect(self.insert_data_into_table)
-        self.search.clicked.connect(self.insert_data_into_table)
-        self.search_2.clicked.connect(self.insert_data_into_table)
-        self.search_3.clicked.connect(self.insert_data_into_table)
-        self.search_4.clicked.connect(self.insert_data_into_table)
+        self.lineEdit.textChanged.connect(self.insert_data_into_table)
+        self.lineEdit_2.textChanged.connect(self.insert_data_into_table)
+        self.lineEdit_3.textChanged.connect(self.insert_data_into_table)
+        self.lineEdit_4.textChanged.connect(self.insert_data_into_table)
         self.add_client.clicked.connect(self.open_client_card)
         self.tableWidget_2.cellDoubleClicked.connect(self.open_client_card)
         self.add_product.clicked.connect(self.open_product_card)
