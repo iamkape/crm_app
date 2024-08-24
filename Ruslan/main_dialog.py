@@ -13,10 +13,11 @@ from Maksim.product_dialog import AddProductDialog
 
 
 class MainDialog(QtWidgets.QDialog):
-    def __init__(self, user=None, manager_id=None, file_db='My/store_database.db'):
+    def __init__(self, user=None, manager_id=None, pattern_doc=None, file_db='My/store_database.db'):
         super().__init__()
         self.manager_id = manager_id
         self.user = user
+        self.pattern_doc = pattern_doc
         self.con = sqlite3.connect(file_db)
         self.table_widgets = []  # Ссылки на виджеты таблиц.
         self.lineedit_list = []  # Ссылки на лайн эдиты.
@@ -177,6 +178,21 @@ class MainDialog(QtWidgets.QDialog):
             table_data = self.con.execute(f"SELECT * FROM {self.table_names[tab_index]}").fetchall()
             if tab_index == 2 and index_warehouse == 0:
                 columns_list, table_data = self.count_quantity_products()
+            elif tab_index == 2 and index_warehouse > 0:
+                resp = self.con.execute('''SELECT product_id,
+                                                  name,
+                                                  warehouse_id,
+                                                  sku,
+                                                  unit_of_measurement,
+                                                  quantity,  
+                                                  expiration_date
+                                             FROM Products
+                                             JOIN Stock
+                                               ON Products.id = Stock.product_id
+                                            ORDER BY expiration_date
+                ''')
+                table_data = resp.fetchall()
+                columns_list = [el[0] for el in resp.description]
             rows_list = [str(i[0]) for i in table_data]
             table.setColumnCount(len(columns_list))
             table.setHorizontalHeaderLabels(columns_list)
