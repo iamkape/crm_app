@@ -1,4 +1,5 @@
-from PyQt5 import QtWidgets
+import os
+from PyQt5 import QtWidgets, QtGui, QtCore
 import sqlite3
 from .db_class import DatabaseManager
 
@@ -12,7 +13,7 @@ class AddProductDialog(QtWidgets.QDialog):
         self.connection = sqlite3.connect('My/store_database.db')
 
         self.setWindowTitle("Добавление товара")
-        self.setFixedSize(500, 400)
+        self.resize(600, 700)
 
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.vertical_layout.setContentsMargins(20, 20, 20, 20)
@@ -47,13 +48,19 @@ class AddProductDialog(QtWidgets.QDialog):
 
             self.vertical_layout.addLayout(self.form_layout)
 
+            self.image_label = QtWidgets.QLabel(self)
+            self.image_label.setFixedSize(565, 400)
+            self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+            self.vertical_layout.addWidget(self.image_label)
+
             if self.existing_data:
                 for i, col_name in enumerate(self.column_names):
                     if col_name == 'id' or col_name == 'employee_id':
                         continue
                     if i < len(self.existing_data):
                         self.line_edits[col_name].setText(self.existing_data[i])
-            
+                self.display_image(self.existing_data[self.column_names.index('image_path')])
+
         self.message_area = QtWidgets.QPlainTextEdit(self)
         self.message_area.setReadOnly(True)
         self.vertical_layout.addWidget(self.message_area)
@@ -74,6 +81,20 @@ class AddProductDialog(QtWidgets.QDialog):
         self.button_layout.addWidget(self.close_button)
 
         self.vertical_layout.addLayout(self.button_layout)
+
+    def display_image(self, image_path):
+        if image_path:
+            absolute_image_path = os.path.join('My', 'image', image_path)
+            if os.path.isfile(absolute_image_path):
+                pixmap = QtGui.QPixmap(absolute_image_path)
+                if not pixmap.isNull():
+                    self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), QtCore.Qt.KeepAspectRatio))
+                else:
+                    self.image_label.setText("Image not loaded properly.")
+            else:
+                self.image_label.setText("Image file not found.")
+        else:
+            self.image_label.clear()
 
     def save_product(self):
         data = {col_name: self.line_edits[col_name].text() for col_name in self.column_names if col_name not in ['id', 'employee_id']}
@@ -99,6 +120,7 @@ class AddProductDialog(QtWidgets.QDialog):
                     insert_query = f"INSERT INTO Products ({columns}) VALUES ({placeholders})"
                     self.connection.execute(insert_query, values)
             self.message_area.setPlainText("Completed successfully")
+            self.display_image(data.get('image_path', ''))
         except Exception as e:
             self.message_area.setPlainText(f"Failed to add/update product: {e}")
 
