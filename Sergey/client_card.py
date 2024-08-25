@@ -6,11 +6,13 @@ from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
 import subprocess, os, platform
+from Maksim.db_class import DatabaseManager
 
 class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data):
         super().__init__()
         self.data = data
+        self.db_manager = DatabaseManager('My/store_database.db')
         self.alert_msg = QtWidgets.QMessageBox()
         self.alert_msg.setWindowTitle('Information')
         self.con = sqlite3.connect('My/store_database.db')
@@ -142,34 +144,72 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
 
 
-    def saveClient(self)->None:
-        """Сохраняет данные нового клиента
-        Проверяет валидность email"""
+    # def saveClient(self)->None:
+    #     """Сохраняет данные нового клиента
+    #     Проверяет валидность email"""
+    #     line_text = []
+    #     pattern = re.compile(r"^\S+@\S+\.\S+$")
+    #     is_email = pattern.match(self.lineedit_data[3].text())
+    #     if is_email is None:
+    #         self.alert_msg.setText('Check email address (user@example.com)')
+    #         self.alert_msg.setStandardButtons(QMessageBox.Ok)
+    #         self.alert_msg.exec_()
+    #     else:
+    #         for i in range(len(self.lineedit_data)):
+    #             line_text.append(self.lineedit_data[i].text())
+    #         with self.con:
+    #             val = ', '.join('?' * (len(self.name_of_col)))
+    #             column = ', '.join(self.name_of_col)
+    #             try:
+    #                 query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
+    #                 self.con.execute(query_database, line_text)
+    #                 self.alert_msg.setText('Your data is saved!')
+    #                 self.alert_msg.setStandardButtons(QMessageBox.Ok)
+    #                 self.alert_msg.exec_()
+    #             except Exception as er:
+    #                 self.alert_msg.setText(f'Error {er}')
+    #                 self.alert_msg.setStandardButtons(QMessageBox.Ok)
+    #                 self.alert_msg.exec_()
+    #                 print(er)
+    #             QtWidgets.QDialog.close(self)
+
+    def saveClient(self) -> None:
+        """Сохраняет данные нового клиента и проверяет валидность."""
         line_text = []
-        pattern = re.compile(r"^\S+@\S+\.\S+$")
-        is_email = pattern.match(self.lineedit_data[3].text())
-        if is_email is None:
-            self.alert_msg.setText('Check email address (user@example.com)')
+
+        for i in range(len(self.lineedit_data)):
+            line_text.append(self.lineedit_data[i].text().strip())
+        
+        customer_data = dict(zip(self.name_of_col, line_text))
+        
+        is_valid, validation_message = self.db_manager.validate_data('Customers', customer_data)
+        
+        if not is_valid:
+            self.alert_msg.setText(f"Error: {validation_message}")
             self.alert_msg.setStandardButtons(QMessageBox.Ok)
             self.alert_msg.exec_()
-        else:
-            for i in range(len(self.lineedit_data)):
-                line_text.append(self.lineedit_data[i].text())
-            with self.con:
-                val = ', '.join('?' * (len(self.name_of_col)))
-                column = ', '.join(self.name_of_col)
-                try:
-                    query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
-                    self.con.execute(query_database, line_text)
-                    self.alert_msg.setText('Your data is saved!')
-                    self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                    self.alert_msg.exec_()
-                except Exception as er:
-                    self.alert_msg.setText(f'Error {er}')
-                    self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                    self.alert_msg.exec_()
-                    print(er)
-                QtWidgets.QDialog.close(self)
+            return
+        
+        line_text = line_text[1:]
+        print("Data being inserted:", line_text)
+
+        with self.con:
+            column_names = ', '.join(self.name_of_col[1:])
+            placeholders = ', '.join('?' * (len(self.name_of_col) - 1))
+            query_database = f"""INSERT INTO Customers ({column_names}) VALUES ({placeholders})"""
+            
+            try:
+                self.con.execute(query_database, line_text)
+                self.alert_msg.setText('Your data is saved!')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
+            except Exception as er:
+                self.alert_msg.setText(f'Error {er}')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
+                print(er)
+            QtWidgets.QDialog.close(self)
+
 
 
 
