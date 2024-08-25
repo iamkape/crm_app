@@ -137,6 +137,8 @@ class MainDialog(QtWidgets.QDialog):
 
         self.retranslateUi()
 
+        self.insert_data_into_table()
+
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("Dialog", "CRM Application"))
@@ -286,6 +288,7 @@ class MainDialog(QtWidgets.QDialog):
             doc.add_paragraph(f'{k}  -- {", ".join(v)}')
             doc.add_paragraph('')
         doc.save('My/shablon.docx')
+
 
 if __name__ == "__main__":
     import sys
