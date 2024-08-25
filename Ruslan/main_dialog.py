@@ -10,6 +10,7 @@ from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
 from Maksim.warehouse_dialog import AddWarehouseDialog
 from Maksim.product_dialog import AddProductDialog
+from Ruslan.data_processing_class import DataProcessing
 
 
 class MainDialog(QtWidgets.QDialog):
