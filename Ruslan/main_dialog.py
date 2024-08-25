@@ -51,6 +51,7 @@ class MainDialog(QtWidgets.QDialog):
 
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
         self.lineEdit.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit)
 
         self.tabWidget.addTab(self.tab, "")
@@ -65,6 +66,7 @@ class MainDialog(QtWidgets.QDialog):
 
         self.lineEdit_2 = QtWidgets.QLineEdit(self.tab_2)
         self.lineEdit_2.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_2.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_2)
 
         self.add_client = QtWidgets.QPushButton(self.tab_2)
@@ -82,6 +84,7 @@ class MainDialog(QtWidgets.QDialog):
 
         self.lineEdit_3 = QtWidgets.QLineEdit(self.tab_3)
         self.lineEdit_3.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_3.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_3)
 
         self.add_warehouse = QtWidgets.QPushButton(self.tab_3)
@@ -106,6 +109,7 @@ class MainDialog(QtWidgets.QDialog):
 
         self.lineEdit_4 = QtWidgets.QLineEdit(self.tab_4)
         self.lineEdit_4.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_4.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_4)
 
         self.add_product = QtWidgets.QPushButton(self.tab_4)
