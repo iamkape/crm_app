@@ -45,7 +45,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4.clicked.connect(self.closeDialog)
         self.pushButton_2.clicked.connect(self.deleteClient)
         self.retranslateUi()
-        self.fill_data()
+        # self.fill_data()
         self.fullTable()
 
 
@@ -185,7 +185,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
     def uploadDoc(self)->None:
         """Производит выгрузку документа"""
         filepath = 'My/shablon.docx'
-        data_for_doc = self.saveClient()
+
         doc = DocxTemplate(filepath)
         doc.render(data_for_doc)
         doc.save('My/newDOc.docx')
