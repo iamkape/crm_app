@@ -75,8 +75,6 @@ class LoginW(QWidget):
                          'Customers' : self.get_names('Customers'),
                          'Employees' : self.get_names('Employees'),
                          'Products' : self.get_names('Products'),
-                         'Stock' : self.get_names('Stock'),
-                         'Transactions_history' : self.get_names('Transactions_history'),
                          'Warehouses' : self.get_names('Warehouses')
                       }
         print(pattern_doc)

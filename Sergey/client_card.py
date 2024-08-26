@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 import re
@@ -7,6 +9,7 @@ from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
 import subprocess, os, platform
 from Maksim.db_class import DatabaseManager
+from collections import ChainMap
 
 class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data):
@@ -41,13 +44,14 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_4 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
         self.gridLayout.addWidget(self.pushButton_4, 5, 6, 1, 1)
+        self.combo = QtWidgets.QComboBox(self)
+        self.gridLayout.addWidget(self.combo, 5, 1, 1, 2)
         self.alert_msg.setWindowTitle('Information')
         self.pushButton.clicked.connect(self.uploadDoc)
         self.pushButton_3.clicked.connect(self.saveClient)
         self.pushButton_4.clicked.connect(self.closeDialog)
         self.pushButton_2.clicked.connect(self.deleteClient)
         self.retranslateUi()
-        # self.fill_data()
         self.fullTable()
 
 
@@ -60,6 +64,9 @@ class Ui_Client_Add(QtWidgets.QDialog):
         self.pushButton_2.setText(_translate("Dialog", "Delete client"))
         self.pushButton_3.setText(_translate("Dialog", "Save"))
         self.pushButton_4.setText(_translate("Dialog", "cancel"))
+        directory = 'My/teamplates'
+        name_file = self.get_files(directory)
+        self.combo.addItems(name_file)
         self.lineedit_data = []
         with self.con:
             row_col = self.con.execute('Pragma table_info ("Customers")').fetchall()
@@ -135,14 +142,11 @@ class Ui_Client_Add(QtWidgets.QDialog):
                     self.alert_msg.close()
                     QtWidgets.QDialog.close(self)
                 else:  self.alert_msg.close()
-
             except Exception as er:
                 print(f'Error : {er}')
                 # self.alert_msg.setText(f'Something wrong {er}')
                 # self.alert_msg.setStandardButtons(QMessageBox.Ok)
                 # self.alert_msg.exec_()
-
-
 
     # def saveClient(self)->None:
     #     """Сохраняет данные нового клиента
@@ -213,25 +217,47 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
 
 
-    def fill_data(self):
-        with self.con:
-            skeleton = self.con.execute("SELECT * FROM Transactions_history"
-                        " JOIN Customers"
-                        " ON Transactions_history.customer_id = Customers.id "
-                        f"WHERE Customers.id = {self.data[0]}").fetchall()
-            print(skeleton,'skel')
+    def fill_data(self)->dict:
+        if self.data is not False:
+            print(self.data)
+            with self.con:
+                self.base = self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ="
+                                         f" {self.data[0]}").fetchall()
+                customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.base[0][7]}").fetchall()
+                employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.base[0][9]}").fetchall()
+                product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.base[0][2]}").fetchall()
+                warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.base[0][3]}").fetchall()
+                n_customer = self.con.execute("Pragma table_info('Customers')").fetchall()
+                col_name_customers = [i[1] for i in n_customer]
+                n_employee = self.con.execute("Pragma table_info('Employees')").fetchall()
+                col_name_employees = [i[1] for i in n_employee]
+                n_product = self.con.execute("Pragma table_info('Products')").fetchall()
+                col_name_products = [i[1] for i in n_product]
+                n_warehouse = self.con.execute("Pragma table_info('Warehouses')").fetchall()
+                col_name_warehouse = [i[1] for i in n_warehouse]
+                res = dict(zip(col_name_customers[1:],customer[0][1:]))
+                res1 = dict(zip(col_name_employees[1:3],employee[0][1:3]))
+                res2 = dict(zip(col_name_products[1:],product[0][1:]))
+                res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
+                combina = ChainMap(res, res1, res2, res3)
+                return dict(combina)
+                # print(customer[0][1:], employee[0][1:3], product[0][1:], warehouse[0][1:])
+
+
+    def get_files(self,directory):
+        return [file for file in os.listdir(directory) if os.path.isfile((os.path.join(directory,file)))]
 
 
     def uploadDoc(self)->None:
         """Производит выгрузку документа"""
-        filepath = 'My/shablon.docx'
-
-        doc = DocxTemplate(filepath)
+        data_for_doc = self.fill_data()
+        print(data_for_doc)
+        doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
         doc.render(data_for_doc)
-        doc.save('My/newDOc.docx')
-        if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
-        elif platform.system() == 'Windows': os.startfile(filepath) # Windows
-        else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants
+        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.base[0][1]}_{self.base[0][0]}.docx')
+        # if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
+        # elif platform.system() == 'Windows': os.startfile(filepath) # Windows
+        # else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants
 
 
     def closeDialog(self)->None:
