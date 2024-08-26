@@ -10,7 +10,7 @@ from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
 from Maksim.warehouse_dialog import AddWarehouseDialog
 from Maksim.product_dialog import AddProductDialog
-#from Ruslan.data_processing_class import DataProcessing
+# from Ruslan.data_processing_class import DataProcessing
 
 
 class MainDialog(QtWidgets.QDialog):
@@ -274,10 +274,18 @@ class MainDialog(QtWidgets.QDialog):
     def open_transaction_card(self, arg):
         """Открывает карточку операции и передает первым аргументом False (если функция вызвана по нажатию PushButton),
         либо список всех значений выбранной строки (если функция вызвана двойным нажатием по TableWidget)."""
-        if arg is not False:
-            arg = self.get_string_values(arg)
-        #transaction_card_window = AddProductDialog(arg)
-        #transaction_card_window.exec_()
+        # if arg is not False:
+        #     arg = self.get_string_values(arg)
+        # transaction_card_window = AddProductDialog(arg)
+        # resp = transaction_card_window.exec_()
+        # exempl = DataProcessing(resp)
+        # if resp[1] in ['sale', 'write-off']:
+        #     response = exempl.add_to_warehouse()
+        # elif resp[1] == 'acceptance':
+        #     response = exempl.remove_from_warehouse()
+        # elif resp[1] == 'movement':
+        #     response = exempl.movement_from_warehouse()
+        # print(response)
         self.insert_data_into_table()
 
     def open_window_document(self):
