@@ -176,7 +176,7 @@ class MainDialog(QtWidgets.QDialog):
                 columns_list, table_data = self.count_quantity_products()
             elif tab_index == 2 and index_warehouse > 0:
                 resp = self.con.execute('''SELECT product_id,
-                                                  name,
+                                                  product_name,
                                                   warehouse_id,
                                                   sku,
                                                   unit_of_measurement,
@@ -208,7 +208,7 @@ class MainDialog(QtWidgets.QDialog):
         """Добавляет имена складов в ComboBox"""
         self.comboBox.clear()
         self.comboBox.addItems(['Stock'])
-        warehouse_names = [el[0] for el in self.con.execute("SELECT name FROM Warehouses").fetchall()]
+        warehouse_names = [el[0] for el in self.con.execute("SELECT warehouse_name FROM Warehouses").fetchall()]
         self.comboBox.addItems(warehouse_names)
 
     def get_string_values(self, row: int) -> list:
@@ -242,7 +242,7 @@ class MainDialog(QtWidgets.QDialog):
         либо кортеж всех значений из текущего склада выбранного в ComboBox."""
         warehouse = self.comboBox.currentText()
         if arg:
-            arg = self.con.execute(f"SELECT * FROM Warehouses WHERE name = '{warehouse}'").fetchall()[0]
+            arg = self.con.execute(f"SELECT * FROM Warehouses WHERE warehouse_name = '{warehouse}'").fetchall()[0]
         warehouse_card_window = AddWarehouseDialog(arg)
         warehouse_card_window.exec_()
         self.add_warehouses_to_combobox()
@@ -258,7 +258,7 @@ class MainDialog(QtWidgets.QDialog):
 
     def count_quantity_products(self):
         """Формирует данные для заполнения нулевого склада"""
-        resp = self.con.execute('''SELECT product_id, name, sku, unit_of_measurement,
+        resp = self.con.execute('''SELECT product_id, product_name, sku, unit_of_measurement,
                                       SUM (quantity) AS total_quantity, 
                                       MAX (expiration_date) AS exp_date
                                      FROM Products

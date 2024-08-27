@@ -6,7 +6,7 @@ import re
 from docxtpl import DocxTemplate
 from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
+from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox, QTableWidget
 import subprocess, os, platform
 from Maksim.db_class import DatabaseManager
 from collections import ChainMap
@@ -219,10 +219,12 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
     def fill_data(self)->dict:
         if self.data is not False:
-            print(self.data)
             with self.con:
-                self.base = self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ="
-                                         f" {self.data[0]}").fetchall()
+                base = self.tableWidget.item(self.tableWidget.currentRow(),2).text()
+                print(base)
+                # self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ="
+                #                          f" {self.data[0]}").fetchall()
+
                 customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.base[0][7]}").fetchall()
                 employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.base[0][9]}").fetchall()
                 product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.base[0][2]}").fetchall()
@@ -251,7 +253,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
     def uploadDoc(self)->None:
         """Производит выгрузку документа"""
         data_for_doc = self.fill_data()
-        print(data_for_doc)
+
         doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
         doc.render(data_for_doc)
         doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.base[0][1]}_{self.base[0][0]}.docx')
