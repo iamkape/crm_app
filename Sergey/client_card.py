@@ -256,7 +256,6 @@ class Ui_Client_Add(QtWidgets.QDialog):
     def uploadDoc(self)->None:
         """Производит выгрузку документа"""
         data_for_doc = self.fill_data()
-
         doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
         doc.render(data_for_doc)
         doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_{self.row_data[0]}.docx')
@@ -267,8 +266,6 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
     def closeDialog(self)->None:
         QtWidgets.QDialog.close(self)
-
-
 
 
 if __name__ == "__main__":

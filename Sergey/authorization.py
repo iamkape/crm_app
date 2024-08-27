@@ -44,7 +44,7 @@ class Ui_Authorization(QtWidgets.QDialog):
         with self.con:
             row_col = self.con.execute('Pragma table_info ("Employees")').fetchall()
             self.name_of_col = [i[1] for i in row_col]
-            for i in range(len(self.name_of_col)):
+            for i in range(len(self.name_of_col)-1):
                 if i == 0 :
                     lineedit = QLineEdit(self)
                     lineedit.setPlaceholderText("Autofill, don't worry")
@@ -65,6 +65,8 @@ class Ui_Authorization(QtWidgets.QDialog):
                 self.lineedit_data.append(lineedit)
                 self.gridLayout.setSpacing(20)
                 self.setLayout(self.gridLayout)
+            self.check = QtWidgets.QCheckBox ('Super admin?')
+            self.gridLayout.addWidget(self.check)
             self.gridLayout.addWidget(self.buttonBox, 6, 0, 1, 1)
 
 
@@ -78,6 +80,8 @@ class Ui_Authorization(QtWidgets.QDialog):
                     line_text.append(encode_pass)
                 else: line_text.append(self.lineedit_data[i].text())
             print(line_text)
+            if self.check.isChecked(): line_text.append('super')
+            else: line_text.append('not super')
             val = ', '.join('?' * len(line_text))
             column = ', '.join(self.name_of_col[1:])
             try:
