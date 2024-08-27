@@ -220,11 +220,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
     def fill_data(self)->dict:
         if self.data is not False:
             with self.con:
-                base = self.tableWidget.item(self.tableWidget.currentRow(),2).text()
-                print(base)
-                # self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ="
-                #                          f" {self.data[0]}").fetchall()
-
+                self.base =  self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ={self.data[0]}").fetchall()
                 customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.base[0][7]}").fetchall()
                 employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.base[0][9]}").fetchall()
                 product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.base[0][2]}").fetchall()
