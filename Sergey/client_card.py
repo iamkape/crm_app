@@ -215,16 +215,23 @@ class Ui_Client_Add(QtWidgets.QDialog):
             QtWidgets.QDialog.close(self)
 
 
-
-
     def fill_data(self)->dict:
         if self.data is not False:
             with self.con:
-                self.base =  self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id ={self.data[0]}").fetchall()
-                customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.base[0][7]}").fetchall()
-                employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.base[0][9]}").fetchall()
-                product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.base[0][2]}").fetchall()
-                warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.base[0][3]}").fetchall()
+                selected_row = self.tableWidget.currentRow()
+                if selected_row >=0 :
+                    self.row_data = []
+                    column_count = self.tableWidget.columnCount()
+                    for column in range(column_count):
+                        item = self.tableWidget.item(selected_row,column)
+                        if item is not None:
+                            self.row_data.append(item.text())
+                        else: self.row_data.append('')
+
+                customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.row_data[7]}").fetchall()
+                employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.row_data[9]}").fetchall()
+                product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.row_data[2]}").fetchall()
+                warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.row_data[3]}").fetchall()
                 n_customer = self.con.execute("Pragma table_info('Customers')").fetchall()
                 col_name_customers = [i[1] for i in n_customer]
                 n_employee = self.con.execute("Pragma table_info('Employees')").fetchall()
@@ -252,7 +259,7 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
         doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
         doc.render(data_for_doc)
-        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.base[0][1]}_{self.base[0][0]}.docx')
+        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_{self.row_data[0]}.docx')
         # if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
         # elif platform.system() == 'Windows': os.startfile(filepath) # Windows
         # else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants
