@@ -17,7 +17,7 @@ class DatabaseManager:
         with self.connection:
             self.connection.execute('''CREATE TABLE IF NOT EXISTS Products (
                 id INTEGER PRIMARY KEY,
-                name VARCHAR(50) NOT NULL,
+                product_name VARCHAR(50) NOT NULL,
                 category VARCHAR(50) NOT NULL,
                 sku VARCHAR(100) UNIQUE NOT NULL,
                 employee_id INTEGER NOT NULL,
@@ -40,8 +40,8 @@ class DatabaseManager:
 
             self.connection.execute('''CREATE TABLE IF NOT EXISTS Warehouses (
                 id INTEGER PRIMARY KEY,
-                name VARCHAR(50) NOT NULL,
-                address VARCHAR(100) UNIQUE NOT NULL,
+                warehouse_name VARCHAR(50) NOT NULL,
+                warehouse_address VARCHAR(100) UNIQUE NOT NULL,
                 geolocation_text VARCHAR(255),
                 coords VARCHAR(255) UNIQUE NOT NULL
             )''')
@@ -57,6 +57,7 @@ class DatabaseManager:
                 customer_id INTEGER,
                 status VARCHAR(50) NOT NULL,
                 employee_id INTEGER NOT NULL,
+                product_experation_date DATE,
                 FOREIGN KEY (product_id) REFERENCES Products(id),
                 FOREIGN KEY (warehouse_from) REFERENCES Warehouses(id),
                 FOREIGN KEY (warehouse_to) REFERENCES Warehouses(id),
@@ -76,17 +77,17 @@ class DatabaseManager:
 
             self.connection.execute('''CREATE TABLE IF NOT EXISTS Customers (
                 id INTEGER PRIMARY KEY,
-                first_name VARCHAR(50) NOT NULL,
-                last_name VARCHAR(50) NOT NULL,
+                cust_first_name VARCHAR(50) NOT NULL,
+                cust_last_name VARCHAR(50) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 phone VARCHAR(20) UNIQUE NOT NULL,
-                address VARCHAR(100) UNIQUE NOT NULL
+                cust_address VARCHAR(100) UNIQUE NOT NULL
             )''')
 
             self.connection.execute('''CREATE TABLE IF NOT EXISTS Employees (
                 id INTEGER PRIMARY KEY,
-                first_name VARCHAR(50) NOT NULL,
-                last_name VARCHAR(50) NOT NULL,
+                empl_first_name VARCHAR(50) NOT NULL,
+                empl_last_name VARCHAR(50) NOT NULL,
                 login VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) UNIQUE NOT NULL,
                 super_admin VARCHAR(50) NOT NULL
@@ -109,7 +110,7 @@ class DatabaseManager:
 
     def create_super_admin(self, first_name, last_name, login, password):
         with sqlite3.connect(self.db_file) as connection:
-            connection.execute('''INSERT INTO Employees (first_name, last_name, login, password, super_admin)
+            connection.execute('''INSERT INTO Employees (empl_first_name, empl_last_name, login, password, super_admin)
                                   VALUES (?, ?, ?, ?, ?)''', (first_name, last_name, login, password, 'super'))
             print(f"Суперадмин {first_name} {last_name} создан.")
 
@@ -120,7 +121,7 @@ class DatabaseManager:
                 (self.faker.company(), self.faker.address(), self.faker.sentence(), f"{self.faker.latitude()}, {self.faker.longitude()}")
                 for _ in range(2)
             ]
-            self.connection.executemany('''INSERT INTO Warehouses (name, address, geolocation_text, coords)
+            self.connection.executemany('''INSERT INTO Warehouses (warehouse_name, warehouse_address, geolocation_text, coords)
                                            VALUES (?, ?, ?, ?)''', warehouse_data)
 
             # Генерация данных для таблицы Products
@@ -130,7 +131,7 @@ class DatabaseManager:
                 (self.faker.word(), random.choice(categories), self.faker.uuid4(), 1, random.choice(unit_of_measurements), None, round(random.uniform(10, 500), 2), self.faker.text(max_nb_chars=200))
                 for _ in range(10)
             ]
-            self.connection.executemany('''INSERT INTO Products (name, category, sku, employee_id, unit_of_measurement, image_path, price, description)
+            self.connection.executemany('''INSERT INTO Products (product_name, category, sku, employee_id, unit_of_measurement, image_path, price, description)
                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', products_data)
 
             # Генерация данных для таблицы Stock
@@ -146,7 +147,7 @@ class DatabaseManager:
                 (self.faker.first_name(), self.faker.last_name(), self.faker.email(), self.faker.phone_number(), self.faker.address())
                 for _ in range(5)
             ]
-            self.connection.executemany('''INSERT INTO Customers (first_name, last_name, email, phone, address)
+            self.connection.executemany('''INSERT INTO Customers (cust_first_name, cust_last_name, email, phone, cust_address)
                                            VALUES (?, ?, ?, ?, ?)''', customers_data)
 
             print("База данных успешно заполнена случайными данными.")
@@ -161,7 +162,7 @@ class DatabaseManager:
         """
         validation_rules = {
             'Products': {
-                'name': str,
+                'product_name': str,
                 'category': str,
                 'sku': str,
                 'employee_id': str,
@@ -177,8 +178,8 @@ class DatabaseManager:
                 'expiration_date': str
             },
             'Warehouses': {
-                'name': str,
-                'address': str,
+                'warehouse_name': str,
+                'warehouse_address': str,
                 'geolocation_text': str,
                 'coords': str
             },
@@ -200,15 +201,15 @@ class DatabaseManager:
                 'price': float,
             },
             'Customers': {
-                'first_name': str,
-                'last_name': str,
+                'cust_first_name': str,
+                'cust_last_name': str,
                 'email': str,
                 'phone': str,
-                'address': str
+                'cust_address': str
             },
             'Employees': {
-                'first_name': str,
-                'last_name': str,
+                'empl_first_name': str,
+                'empl_last_name': str,
                 'login': str,
                 'password': str,
                 'super_admin': str,
