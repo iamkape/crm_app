@@ -193,6 +193,7 @@ class DatabaseManager:
                 'customer_id': (int, type(None)),
                 'status': str,
                 'employee_id': str,
+                'product_experation_date': str
             },
             'Transactions_Items': {
                 'transactions_history_id': int,
