@@ -12,7 +12,7 @@ from Sergey.list_of_manager import Ui_listManager
 from Maksim.warehouse_dialog import AddWarehouseDialog
 from Maksim.product_dialog import AddProductDialog
 from Alex.test import DialogWindow
-# from Ruslan.data_processing_class import DataProcessing
+from Ruslan.data_processing_class import DataProcessing
 
 
 class MainDialog(QtWidgets.QDialog):
@@ -282,19 +282,22 @@ class MainDialog(QtWidgets.QDialog):
     def open_transaction_card(self, arg):
         """Открывает карточку операции и передает первым аргументом False (если функция вызвана по нажатию PushButton),
         либо список всех значений выбранной строки (если функция вызвана двойным нажатием по TableWidget)."""
-        if arg is not False:
-            arg = self.get_string_values(arg)
-        transaction_card_window = DialogWindow()
-        resp = transaction_card_window.exec_()
-        print(resp)
-        # exempl = DataProcessing(resp)
-        # if resp[1] in ['sale', 'write-off']:
-        #     response = exempl.add_to_warehouse()
-        # elif resp[1] == 'acceptance':
-        #     response = exempl.remove_from_warehouse()
-        # elif resp[1] == 'movement':
-        #     response = exempl.movement_from_warehouse()
-        # print(response)
+        self.data_from_outside = []
+        self.dialog = DialogWindow()
+        self.dialog.submitted.connect(self.update_data)
+        self.dialog.show()
+
+    @QtCore.pyqtSlot(list)
+    def update_data(self, data):
+        operation = DataProcessing(data)
+        result = 'Error'
+        if data[0] in ['sale', 'write-off']:
+            result = operation.remove_from_warehouse()
+        elif data[0] == 'acceptance':
+            result = operation.remove_from_warehouse()
+        elif data[0] == 'movement':
+            result = operation.movement_from_warehouse()
+        print(result)
         self.insert_data_into_table()
 
     def open_window_document(self):

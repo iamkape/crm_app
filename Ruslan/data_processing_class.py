@@ -5,13 +5,14 @@ class DataProcessing:
     def __init__(self, data: list, file_db='../My/store_database.db'):
         self.con = sqlite3.connect(file_db)
         self.data = data
-        self.transaction = data[1]
-        self.product_id = data[2]
-        self.quantity = data[5]
-        self.warehouse_from = data[3]
-        self.warehouse_to = data[4]
-        self.quantity_in_w1 = self.get_quantity_in_warehouse(data[3])
-        self.quantity_in_w2 = self.get_quantity_in_warehouse(data[4])
+        self.transaction = data[0]
+        self.product_id = int(data[1])
+        self.quantity = int(data[4])
+        self.warehouse_from = data[2]
+        self.warehouse_to = data[3]
+        self.quantity_in_w1 = self.get_quantity_in_warehouse(data[2])
+        self.quantity_in_w2 = self.get_quantity_in_warehouse(data[3])
+        self.add_transaction_to_db()
 
     def get_quantity_in_warehouse(self, warehouse_id: int = None) -> int | None:
         """Функция возвращает количество товара на выбранном складе (либо None если товар отсутствует)."""
@@ -92,3 +93,11 @@ class DataProcessing:
             except sqlite3.Error as err:
                 self.con.execute('ROLLBACK')
                 return f'Operation error: {err}'
+
+    def add_transaction_to_db(self):
+        resp = self.con.execute('''Pragma table_info (Transactions_history)''').fetchall()
+        columns = [i[1] for i in resp][1:]
+        print(columns)
+        data = map(str, self.data)
+        data.append('24-11-11')
+        print(f'''INSERT INTO Transactions_history ({', '.join(columns)}) VALUES ({', '.join(data)})''')
