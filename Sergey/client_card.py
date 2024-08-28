@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from openpyxl import load_workbook
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 import re
@@ -215,19 +215,34 @@ class Ui_Client_Add(QtWidgets.QDialog):
             QtWidgets.QDialog.close(self)
 
 
+    def forWord(self):
+        data_for_doc = self.fill_data()
+        doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
+        doc.render(data_for_doc)
+        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_{self.row_data[0]}.docx')
+
+
+    def forExcel(self):
+        file_path = (f'My/teamplates/{self.combo.currentText()}')
+        worklist = load_workbook(file_path)
+        sheet = worklist.active
+        head_in_teamplate = next(sheet.iter_rows(min_row=1,max_row=1,values_only=True))
+
+
+
     def fill_data(self)->dict:
         if self.data is not False:
             with self.con:
                 selected_row = self.tableWidget.currentRow()
-                if selected_row >=0 :
+                if selected_row >= 0:
                     self.row_data = []
                     column_count = self.tableWidget.columnCount()
                     for column in range(column_count):
-                        item = self.tableWidget.item(selected_row,column)
+                        item = self.tableWidget.item(selected_row, column)
                         if item is not None:
                             self.row_data.append(item.text())
-                        else: self.row_data.append('')
-
+                        else:
+                            self.row_data.append('')
                 customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.row_data[7]}").fetchall()
                 employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.row_data[9]}").fetchall()
                 product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.row_data[2]}").fetchall()
@@ -255,10 +270,11 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
     def uploadDoc(self)->None:
         """Производит выгрузку документа"""
-        data_for_doc = self.fill_data()
-        doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
-        doc.render(data_for_doc)
-        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_{self.row_data[0]}.docx')
+        if self.combo.currentText().endswith('docx'): self.forWord()
+        else: self.forExcel()
+
+
+
         # if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
         # elif platform.system() == 'Windows': os.startfile(filepath) # Windows
         # else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants

@@ -14,7 +14,7 @@ class DataProcessing:
         self.quantity_in_w2 = self.get_quantity_in_warehouse(data[3])
         self.add_transaction_to_db()
 
-    def get_quantity_in_warehouse(self, warehouse_id: int = None) -> int | None:
+    def get_quantity_in_warehouse(self, warehouse_id: int = None):
         """Функция возвращает количество товара на выбранном складе (либо None если товар отсутствует)."""
         if warehouse_id is None:
             return None
