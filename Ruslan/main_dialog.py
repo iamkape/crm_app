@@ -8,8 +8,10 @@ from functools import partial
 import sqlite3
 from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
+from Sergey.list_of_manager import Ui_listManager
 from Maksim.warehouse_dialog import AddWarehouseDialog
 from Maksim.product_dialog import AddProductDialog
+from Alex.test import DialogWindow
 # from Ruslan.data_processing_class import DataProcessing
 
 
@@ -49,6 +51,10 @@ class MainDialog(QtWidgets.QDialog):
 
             self.add_manager = QtWidgets.QPushButton(self.tab)
             self.add_manager.setGeometry(QtCore.QRect(760, 10, 131, 31))
+
+            self.managers = QtWidgets.QPushButton(self.tab)
+            self.managers.setGeometry(QtCore.QRect(480, 10, 131, 31))
+            self.managers.setText('Managers')
 
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
         self.lineEdit.setGeometry(QtCore.QRect(180, 20, 153, 21))
@@ -135,6 +141,7 @@ class MainDialog(QtWidgets.QDialog):
         if user == 'super':
             self.add_manager.clicked.connect(self.open_manager_card)
             self.add_document.clicked.connect(self.open_window_document)
+            self.managers.clicked.connect(self.open_managers_list)
 
         self.retranslateUi()
 
@@ -148,6 +155,7 @@ class MainDialog(QtWidgets.QDialog):
         if self.user == 'super':
             self.add_document.setText(_translate("Dialog", "Add document"))
             self.add_manager.setText(_translate("Dialog", "Add manager"))
+            self.managers.setText(_translate("Dialog", "Managers"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Operations"))
         self.add_client.setText(_translate("Dialog", "Add client"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Сlients"))
@@ -274,10 +282,11 @@ class MainDialog(QtWidgets.QDialog):
     def open_transaction_card(self, arg):
         """Открывает карточку операции и передает первым аргументом False (если функция вызвана по нажатию PushButton),
         либо список всех значений выбранной строки (если функция вызвана двойным нажатием по TableWidget)."""
-        # if arg is not False:
-        #     arg = self.get_string_values(arg)
-        # transaction_card_window = AddProductDialog(arg)
-        # resp = transaction_card_window.exec_()
+        if arg is not False:
+            arg = self.get_string_values(arg)
+        transaction_card_window = DialogWindow()
+        resp = transaction_card_window.exec_()
+        print(resp)
         # exempl = DataProcessing(resp)
         # if resp[1] in ['sale', 'write-off']:
         #     response = exempl.add_to_warehouse()
@@ -297,6 +306,11 @@ class MainDialog(QtWidgets.QDialog):
             doc.add_paragraph(f'{k}  -- {", ".join(v)}')
             doc.add_paragraph('')
         doc.save('My/shablon.docx')
+
+    def open_managers_list(self):
+        """Открывает список менеджеров."""
+        managers_window = Ui_listManager()
+        managers_window.exec_()
 
 
 if __name__ == "__main__":
