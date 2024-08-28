@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QMessageBox
 class Ui_listManager(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
-        self.con = sqlite3.connect('../My/store_database.db')
+        self.con = sqlite3.connect('My/store_database.db')
         self.setObjectName("list_manager")
         self.resize(836, 577)
         self.alert_msg = QtWidgets.QMessageBox()
@@ -88,7 +88,7 @@ class Ui_listManager(QtWidgets.QDialog):
                 else:
                     self.alert_msg.close()
             except Exception as er:
-                pass
+                self.alert_msg.setText(f'Something Wrong {er}')
 
 
 if __name__ == "__main__":
