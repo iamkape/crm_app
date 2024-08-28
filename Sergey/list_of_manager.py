@@ -89,7 +89,8 @@ class Ui_listManager(QtWidgets.QDialog):
                     self.alert_msg.close()
             except Exception as er:
                 self.alert_msg.setText(f'Something Wrong {er}')
-
+        self.tableWidget.setRowCount(0)
+        self.fullDial()
 
 if __name__ == "__main__":
     import sys
