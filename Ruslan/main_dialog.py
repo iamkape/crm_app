@@ -3,7 +3,7 @@
 # Contacts: (Phone number: +375297242242, Telegram: @ruslanyarmak).
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QTableWidget
+from PyQt5.QtWidgets import QTableWidget, QMessageBox
 from functools import partial
 import sqlite3
 from Sergey.client_card import Ui_Client_Add
@@ -143,6 +143,9 @@ class MainDialog(QtWidgets.QDialog):
             self.add_document.clicked.connect(self.open_window_document)
             self.managers.clicked.connect(self.open_managers_list)
 
+        self.announcement = QMessageBox()
+        self.announcement.setWindowTitle('Info')
+
         self.retranslateUi()
 
         self.insert_data_into_table()
@@ -254,6 +257,7 @@ class MainDialog(QtWidgets.QDialog):
         warehouse_card_window = AddWarehouseDialog(arg)
         warehouse_card_window.exec_()
         self.add_warehouses_to_combobox()
+        self.insert_data_into_table()
 
     def open_product_card(self, arg):
         """Открывает карточку продукта и передает первым аргументом False (если функция вызвана по нажатию PushButton),
@@ -297,7 +301,9 @@ class MainDialog(QtWidgets.QDialog):
             result = operation.remove_from_warehouse()
         elif data[0] == 'movement':
             result = operation.movement_from_warehouse()
-        print(result)
+        self.announcement.setText(result)
+        self.announcement.setStandardButtons(QMessageBox.Ok)
+        self.announcement.exec_()
         self.insert_data_into_table()
 
     def open_window_document(self):
