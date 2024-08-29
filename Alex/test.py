@@ -4,6 +4,7 @@ from PyQt5 import QtGui as qtg
 from PyQt5 import QtCore as qtc
 import sqlite3
 
+
 class DialogWindow(qtw.QWidget):
 
     submitted = qtc.pyqtSignal(list)
@@ -15,22 +16,44 @@ class DialogWindow(qtw.QWidget):
         self.comboBox = qtw.QComboBox()
         self.comboBox.addItems(['acceptance', 'sale', 'write-off', 'movement'])
 
-        self.con = sqlite3.connect('database/store_database.db')  #!!!!!!!!!!!!!!! Change path, please!!!!!!!!!!
+        self.con = sqlite3.connect('store_database.db')  #!!!!!!!!!!!!!!! Change path, please!!!!!!!!!!
 
         with self.con:
-            table_data_product_id = self.con.execute("SELECT id FROM Products").fetchall()
+            # table_data_product_id = self.con.execute("SELECT id FROM Products").fetchall()
             table_data_warehouse_id = self.con.execute("SELECT id FROM Warehouses").fetchall()
             table_data_customers_id = self.con.execute("SELECT id FROM Customers").fetchall()
             table_data_employees_id = self.con.execute("SELECT id FROM Employees").fetchall()
-# product_id
+
+            table_data = self.con.execute("SELECT id, product_name FROM Products").fetchall()
+
+        # print(table_data)
+        dicty = {}
+        for i in range(len(table_data)):
+            if dicty.get(list(table_data[i])[1], []):
+                dicty[list(table_data[i])[1]].append(str(list(table_data[i])[0]))
+            else:
+                dicty[list(table_data[i])[1]] = [str(list(table_data[i])[0])]
+
+        # print(dicty)
+
         self.comboBox_1 = qtw.QComboBox()
-        self.temp_list = []
-        for item in table_data_product_id:
-            self.temp_list.append(list(item)[0])
-        self.temp_list.sort()
-        for item in self.temp_list:
-            self.comboBox_1.addItem(str(item))
-        print(self.temp_list)
+
+        for i in dicty.keys():
+            self.comboBox_1.addItem(str(i), dicty[i])
+
+        self.comboBox_1.activated.connect(self.clicker)
+
+        self.comboBox_11 = qtw.QComboBox()
+
+# product_id
+#         self.comboBox_1 = qtw.QComboBox()
+#         self.temp_list = []
+#         for item in table_data_product_id:
+#             self.temp_list.append(list(item)[0])
+#         self.temp_list.sort()
+#         for item in self.temp_list:
+#             self.comboBox_1.addItem(str(item))
+#         print(self.temp_list)
 # Warehouse from
 # Warehouse to
         self.comboBox_2 = qtw.QComboBox()
@@ -42,7 +65,7 @@ class DialogWindow(qtw.QWidget):
         for item in self.temp_list:
             self.comboBox_2.addItem(str(item))
             self.comboBox_3.addItem(str(item))
-        print(self.temp_list)
+        # print(self.temp_list)
 # Customers
         self.comboBox_6 = qtw.QComboBox()
         self.temp_list = []
@@ -51,7 +74,7 @@ class DialogWindow(qtw.QWidget):
         self.temp_list.sort()
         for item in self.temp_list:
             self.comboBox_6.addItem(str(item))
-        print(self.temp_list)
+        # print(self.temp_list)
 # Employees
         self.comboBox_8 = qtw.QComboBox()
         self.temp_list = []
@@ -60,11 +83,9 @@ class DialogWindow(qtw.QWidget):
         self.temp_list.sort()
         for item in self.temp_list:
             self.comboBox_8.addItem(str(item))
-        print(self.temp_list)
+        # print(self.temp_list)
 
-
-
-        self.comboBox_1.setEditable(True)
+        # self.comboBox_1.setEditable(True)
         self.comboBox_2.setEditable(True)
         self.comboBox_3.setEditable(True)
         self.comboBox_6.setEditable(True)
@@ -80,6 +101,7 @@ class DialogWindow(qtw.QWidget):
         # self.edit_6 = qtw.QLineEdit()
         self.edit_7 = qtw.QLineEdit()
         # self.edit_8 = qtw.QLineEdit()
+        self.edit_9 = qtw.QLineEdit()
 
         self.comboBox_2.setDisabled(True)
         self.comboBox_3.setDisabled(False)
@@ -94,14 +116,25 @@ class DialogWindow(qtw.QWidget):
 
         self.layout().addWidget(self.comboBox)
 
-        self.layout().addRow('product_id             ', self.comboBox_1)  # INTEGER
-        self.layout().addRow('warehouse_from         ', self.comboBox_2)  # INTEGER
-        self.layout().addRow('warehouse_to           ', self.comboBox_3)  # INTEGER
-        self.layout().addRow('quantity               ', self.edit_4)  # INTEGER
-        self.layout().addRow('transaction_date       ', self.edit_5)  # DATETIME
-        self.layout().addRow('customer_id            ', self.comboBox_6)  # INTEGER
-        self.layout().addRow('status                 ', self.edit_7)  # VARCHAR
-        self.layout().addRow('employee_id            ', self.comboBox_8)  # INTEGER
+
+
+        self.combo_widget = qtw.QWidget()
+        self.combo_widget.setLayout(qtw.QHBoxLayout())
+        # self.combo_widget.layout().addWidget(qtw.QLabel('product_id '))
+        self.combo_widget.layout().addWidget(self.comboBox_1)
+        self.combo_widget.layout().addWidget(self.comboBox_11)
+        self.layout().addRow('product_id ', self.combo_widget)
+        # self.setLayout(layout)
+
+        # self.layout().addRow('product_id                ', self.comboBox_1)  # INTEGER
+        self.layout().addRow('warehouse_from            ', self.comboBox_2)  # INTEGER
+        self.layout().addRow('warehouse_to              ', self.comboBox_3)  # INTEGER
+        self.layout().addRow('quantity                  ', self.edit_4)  # INTEGER
+        self.layout().addRow('transaction_date          ', self.edit_5)  # DATETIME
+        self.layout().addRow('customer_id               ', self.comboBox_6)  # INTEGER
+        self.layout().addRow('status                    ', self.edit_7)  # VARCHAR
+        self.layout().addRow('employee_id               ', self.comboBox_8)  # INTEGER
+        self.layout().addRow('product_experation_date   ', self.edit_9)  # INTEGER
 
         buttons = qtw.QWidget()
         buttons.setLayout(qtw.QHBoxLayout())
@@ -115,6 +148,11 @@ class DialogWindow(qtw.QWidget):
         self.data = []
         # self.show()   # active when we run dialog as __main__
 
+    def clicker(self, index):
+        # Clear the second box
+        self.comboBox_11.clear()
+        # Do the dependant thing
+        self.comboBox_11.addItems(self.comboBox_1.itemData(index))
 
     def curIndexChanged(self):
         if self.comboBox.currentIndex() == 0:
@@ -135,7 +173,7 @@ class DialogWindow(qtw.QWidget):
             self.comboBox_6.setDisabled(True)
     def on_submit(self):
         self.data = []
-        self.data.append(self.comboBox_1.currentText())
+        self.data.append(self.comboBox_11.currentText())
         self.data.append(self.comboBox_2.currentText())
         self.data.append(self.comboBox_3.currentText())
         self.data.append(self.edit_4.text())
@@ -143,6 +181,10 @@ class DialogWindow(qtw.QWidget):
         self.data.append(self.comboBox_6.currentText())
         self.data.append(self.edit_7.text())
         self.data.append(self.comboBox_8.currentText())
+        if self.edit_9.text():
+            self.data.append(self.edit_9.text())
+        else:
+            self.data.append(None)
         if self.comboBox.currentIndex() == 0:
             self.data[1] = None
             self.data[5] = None
@@ -211,10 +253,11 @@ class MainWindow(qtw.QWidget):
         self.dialog.show()
 
 
-
 if __name__ == '__main__':
     app = qtw.QApplication(sys.argv)
     # mw =  DialogWindow()
     mw = MainWindow()
     sys.exit(app.exec())
+
+
 
