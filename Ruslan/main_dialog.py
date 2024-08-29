@@ -298,7 +298,7 @@ class MainDialog(QtWidgets.QDialog):
         if data[0] in ['sale', 'write-off']:
             result = operation.remove_from_warehouse()
         elif data[0] == 'acceptance':
-            result = operation.remove_from_warehouse()
+            result = operation.add_to_warehouse()
         elif data[0] == 'movement':
             result = operation.movement_from_warehouse()
         self.announcement.setText(result)

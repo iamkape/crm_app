@@ -59,8 +59,9 @@ class DataProcessing:
                 #    self.con.execute('''INSERT INTO Stock ''')
                 self.con.execute(f'''UPDATE Stock SET quantity = "{self.quantity + self.quantity_in_w2}"
                                       WHERE product_id = "{self.product_id}"
-                                        AND warehouse_id = "{self.warehouse_from}"
+                                        AND warehouse_id = "{self.warehouse_to}"
                 ''')
+                self.add_transaction_to_db()
                 self.con.execute('COMMIT')
                 return 'Operation completed successfully'
             except sqlite3.Error as err:
