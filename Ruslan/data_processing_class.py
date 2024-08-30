@@ -55,8 +55,11 @@ class DataProcessing:
         with self.con:
             try:
                 self.con.execute('BEGIN')
-                #if self.quantity_in_w1 is None:
-                #    self.con.execute('''INSERT INTO Stock ''')
+                if self.quantity_in_w2 is None:
+                    self.quantity_in_w2 = 0
+                    sql_insert = '''INSERT INTO Stock VALUES (?, ?, ?, ?, ?)'''
+                    params = [None, self.data[1], self.data[3], 0, self.data[9]]
+                    self.con.execute(sql_insert, params)
                 self.con.execute(f'''UPDATE Stock SET quantity = "{self.quantity + self.quantity_in_w2}"
                                       WHERE product_id = "{self.product_id}"
                                         AND warehouse_id = "{self.warehouse_to}"
@@ -67,28 +70,35 @@ class DataProcessing:
             except sqlite3.Error as err:
                 self.con.execute('ROLLBACK')
                 return f'Operation error: {err}'
+
     def movement_from_warehouse(self):
+        """Уменьшает количество товара на первом складе на N ед. и добавляет это же количество на второй склад."""
         if (self.quantity_in_w1 is None) or (self.quantity_in_w1 - self.quantity < 0):
             return 'Exceeds the quantity of goods in warehouse'
+        result = self.quantity_in_w1 - self.quantity
         with self.con:
             try:
-                difference = self.quantity_in_w1 - self.quantity
                 self.con.execute('BEGIN')
-                self.con.execute(f'''UPDATE Stock SET quantity = "{difference}"
-                                      WHERE product_id = "{self.product_id}"
-                                        AND warehouse_id = "{self.warehouse_from}"
-                                        
-                ''')
+                if result == 0:
+                    self.con.execute(f'''DELETE FROM Stock
+                                                 WHERE product_id = "{self.product_id}"
+                                                   AND warehouse_id = "{self.warehouse_from}"
+                    ''')
+                else:
+                    self.con.execute(f'''UPDATE Stock SET quantity = "{result}"
+                                                                 WHERE product_id = "{self.product_id}"
+                                                                   AND warehouse_id = "{self.warehouse_from}"
+                    ''')
+                if self.quantity_in_w2 is None:
+                    self.quantity_in_w2 = 0
+                    sql_insert = '''INSERT INTO Stock VALUES (?, ?, ?, ?, ?)'''
+                    params = [None, self.data[1], self.data[3], 0, self.data[9]]
+                    self.con.execute(sql_insert, params)
                 self.con.execute(f'''UPDATE Stock SET quantity = "{self.quantity + self.quantity_in_w2}"
                                       WHERE product_id = "{self.product_id}"
-                                        AND warehouse_id = "{self.warehouse_from}"
-
-                                ''')
-                if difference == 0:
-                    self.con.execute(f'''DELETE FROM Stock
-                                          WHERE product_id = "{self.product_id}"
-                                            AND warehouse_id = "{self.warehouse_from}
-                    ''')
+                                        AND warehouse_id = "{self.warehouse_to}"
+                ''')
+                self.add_transaction_to_db()
                 self.con.execute('COMMIT')
                 return 'Operation completed successfully'
             except sqlite3.Error as err:
@@ -98,10 +108,5 @@ class DataProcessing:
     def add_transaction_to_db(self):
         """Добавляет транзакцию в БД."""
         sql_insert = '''INSERT INTO Transactions_history VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        data = [None] + self.data + ['2024-11-11']  # Потом убрать дату.
+        data = [None] + self.data
         self.con.execute(sql_insert, data)
-
-
-#exemp = DataProcessing(['sale', '1', '1', None, '5', '2024-11-11', '1', 'Complited', '1'])
-#print(exemp.remove_from_warehouse())
-
