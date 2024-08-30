@@ -12,7 +12,7 @@ class AddProductDialog(QtWidgets.QDialog):
         print("Existing data:", self.existing_data)
         self.connection = sqlite3.connect('My/store_database.db')
 
-        self.setWindowTitle("Добавление товара")
+        self.setWindowTitle("Adding product")
         self.resize(600, 700)
 
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
@@ -61,10 +61,6 @@ class AddProductDialog(QtWidgets.QDialog):
                         self.line_edits[col_name].setText(self.existing_data[i])
                 self.display_image(self.existing_data[self.column_names.index('image_path')])
 
-        self.message_area = QtWidgets.QPlainTextEdit(self)
-        self.message_area.setReadOnly(True)
-        self.vertical_layout.addWidget(self.message_area)
-
         self.button_layout = QtWidgets.QHBoxLayout()
 
         self.save_button = QtWidgets.QPushButton("Save", self)
@@ -103,7 +99,7 @@ class AddProductDialog(QtWidgets.QDialog):
         valid, message = self.db.validate_data('Products', data)
 
         if not valid:
-            self.message_area.setPlainText(message)
+            QtWidgets.QMessageBox.critical(self, "Error", message)
             return
 
         columns = ', '.join(data.keys())
@@ -116,13 +112,14 @@ class AddProductDialog(QtWidgets.QDialog):
                     product_id = self.existing_data[0]
                     update_query = f"UPDATE Products SET {', '.join([f'{col} = ?' for col in data.keys()])} WHERE id = ?"
                     self.connection.execute(update_query, values + (product_id,))
+                    QtWidgets.QMessageBox.information(self, "Successfully", "Product successfully updated")
                 else:
                     insert_query = f"INSERT INTO Products ({columns}) VALUES ({placeholders})"
                     self.connection.execute(insert_query, values)
-            self.message_area.setPlainText("Completed successfully")
+                    QtWidgets.QMessageBox.information(self, "Successfully", "Product successfully added")
             self.display_image(data.get('image_path', ''))
         except Exception as e:
-            self.message_area.setPlainText(f"Failed to add/update product: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to add/update product: {e}")
 
     def delete_product(self):
         self.alert_msg.setText('Are you sure you want to delete this product?')
@@ -132,7 +129,8 @@ class AddProductDialog(QtWidgets.QDialog):
                 product_id = self.existing_data[0]
                 with self.connection:
                     self.connection.execute("DELETE FROM Products WHERE id = ?", (product_id,))
-                self.message_area.setPlainText("Product deleted successfully")
+                QtWidgets.QMessageBox.information(self, "Successfully", "Product successfully deleted")
                 self.close()
             except Exception as e:
-                self.message_area.setPlainText(f"Failed to delete product: {e}")
+                QtWidgets.QMessageBox.critical(self, "Error", f"Failed to delete product: {e}")
+

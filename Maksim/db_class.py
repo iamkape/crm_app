@@ -122,7 +122,7 @@ class DatabaseManager:
                 for _ in range(2)
             ]
             self.connection.executemany('''INSERT INTO Warehouses (warehouse_name, warehouse_address, geolocation_text, coords)
-                                           VALUES (?, ?, ?, ?)''', warehouse_data)
+                                        VALUES (?, ?, ?, ?)''', warehouse_data)
 
             # Генерация данных для таблицы Products
             categories = ["Electronics", "Furniture", "Groceries", "Clothing", "Books"]
@@ -132,7 +132,7 @@ class DatabaseManager:
                 for _ in range(10)
             ]
             self.connection.executemany('''INSERT INTO Products (product_name, category, sku, employee_id, unit_of_measurement, image_path, price, description)
-                                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', products_data)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', products_data)
 
             # Генерация данных для таблицы Stock
             stock_data = [
@@ -140,7 +140,7 @@ class DatabaseManager:
                 for i in range(10)
             ]
             self.connection.executemany('''INSERT INTO Stock (product_id, warehouse_id, quantity, expiration_date)
-                                           VALUES (?, ?, ?, ?)''', stock_data)
+                                        VALUES (?, ?, ?, ?)''', stock_data)
 
             # Генерация данных для таблицы Customers
             customers_data = [
@@ -148,9 +148,45 @@ class DatabaseManager:
                 for _ in range(5)
             ]
             self.connection.executemany('''INSERT INTO Customers (cust_first_name, cust_last_name, email, phone, cust_address)
-                                           VALUES (?, ?, ?, ?, ?)''', customers_data)
+                                        VALUES (?, ?, ?, ?, ?)''', customers_data)
+            
+            # Генерация данных для таблицы Transactions_history
+            transaction_types = ["Приемка", "Продажа", "Списание", "Перемещение"]
+            statuses = ["completed", "pending", "canceled"]
+            
+            transactions_data = []
+            for _ in range(10):
+                transaction_type = random.choice(transaction_types)
+                product_id = random.randint(1, 10)
+                warehouse_from = random.randint(1, 2) if transaction_type == "Перемещение" else None
+                warehouse_to = random.randint(1, 2) if transaction_type in ["Перемещение", "Приемка"] else None
+                quantity = random.randint(1, 50)
+                transaction_date = self.faker.date_time_between(start_date='-1y', end_date='now')
+                customer_id = random.randint(1, 5) if transaction_type == "Продажа" else None
+                status = random.choice(statuses)
+                employee_id = 1  # Предполагается, что существует администратор с id=1
+                product_experation_date = (datetime.now() + timedelta(days=random.randint(0, 365))).date() if random.choice([True, False]) else None
+
+                transactions_data.append((
+                    transaction_type,
+                    product_id,
+                    warehouse_from,
+                    warehouse_to,
+                    quantity,
+                    transaction_date,
+                    customer_id,
+                    status,
+                    employee_id,
+                    product_experation_date
+                ))
+            
+            self.connection.executemany('''INSERT INTO Transactions_history 
+                                        (transaction_type, product_id, warehouse_from, warehouse_to, quantity, transaction_date, customer_id, status, employee_id, product_experation_date)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', transactions_data)
 
             print("База данных успешно заполнена случайными данными.")
+
+
         
     def validate_data(self, table_name: str, data: dict) -> tuple[bool, str]:
         """

@@ -49,10 +49,6 @@ class AddWarehouseDialog(QtWidgets.QDialog):
 
             self.vertical_layout.addLayout(self.form_layout)
 
-        self.message_area = QtWidgets.QPlainTextEdit(self)
-        self.message_area.setReadOnly(True)
-        self.vertical_layout.addWidget(self.message_area)
-
         self.button_layout = QtWidgets.QHBoxLayout()
 
         self.save_button = QtWidgets.QPushButton("Save", self)
@@ -75,7 +71,7 @@ class AddWarehouseDialog(QtWidgets.QDialog):
 
         valid, message = self.db.validate_data('Warehouses', data)
         if not valid:
-            self.message_area.setPlainText(message)
+            QtWidgets.QMessageBox.critical(self, "Error", message)
             return
 
         columns = ', '.join(data.keys())
@@ -88,12 +84,14 @@ class AddWarehouseDialog(QtWidgets.QDialog):
                     warehouse_id = self.existing_data[0]
                     update_query = f"UPDATE Warehouses SET {', '.join([f'{col} = ?' for col in data.keys()])} WHERE id = ?"
                     self.connection.execute(update_query, values + (warehouse_id,))
+                    QtWidgets.QMessageBox.information(self, "Successfully", "Warehouse successfully updated")
                 else:
                     insert_query = f"INSERT INTO Warehouses ({columns}) VALUES ({placeholders})"
                     self.connection.execute(insert_query, values)
-            self.message_area.setPlainText("Completed successfully")
+                    QtWidgets.QMessageBox.information(self, "Successfully", "Warehouse successfully added")
         except Exception as e:
-            self.message_area.setPlainText(f"Failed to add/update warehouse: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to add/update warehouse: {e}")
+
 
     def delete_warehouse(self):
         self.alert_msg.setText('Are you sure you want to delete this warehouse?')
@@ -103,7 +101,7 @@ class AddWarehouseDialog(QtWidgets.QDialog):
                 warehouse_id = self.existing_data[0]
                 with self.connection:
                     self.connection.execute("DELETE FROM Warehouses WHERE id = ?", (warehouse_id,))
-                self.message_area.setPlainText("Warehouse deleted successfully")
+                QtWidgets.QMessageBox.information(self, "Successfully", "The warehouse was successfully deleted")
                 self.close()
             except Exception as e:
-                self.message_area.setPlainText(f"Failed to delete warehouse: {e}")
+                QtWidgets.QMessageBox.critical(self, "Error", f"Failed to delete warehouse: {e}")
