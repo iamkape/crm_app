@@ -6,6 +6,10 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QMessageBox
 from functools import partial
 import sqlite3
+import sys
+import subprocess
+import os
+import platform
 from Sergey.client_card import Ui_Client_Add
 from Sergey.authorization import Ui_Authorization
 from Sergey.list_of_manager import Ui_listManager
@@ -43,21 +47,30 @@ class MainDialog(QtWidgets.QDialog):
         self.new_transaction.setGeometry(QtCore.QRect(1040, 10, 131, 31))
 
         self.upload_document = QtWidgets.QPushButton(self.tab)
-        self.upload_document.setGeometry(QtCore.QRect(900, 10, 131, 31))
+        self.upload_document.setGeometry(QtCore.QRect(460, 10, 131, 31))
 
         if user == 'super':
-            self.add_document = QtWidgets.QPushButton(self.tab)
-            self.add_document.setGeometry(QtCore.QRect(620, 10, 131, 31))
+            self.add_word = QtWidgets.QPushButton(self.tab)
+            self.add_word.setGeometry(QtCore.QRect(600, 10, 70, 31))
+            self.add_word.setText('Add Word')
+
+            self.add_excel = QtWidgets.QPushButton(self.tab)
+            self.add_excel.setGeometry(QtCore.QRect(680, 10, 70, 31))
+            self.add_excel.setText('Add Excel')
 
             self.add_manager = QtWidgets.QPushButton(self.tab)
             self.add_manager.setGeometry(QtCore.QRect(760, 10, 131, 31))
 
             self.managers = QtWidgets.QPushButton(self.tab)
-            self.managers.setGeometry(QtCore.QRect(480, 10, 131, 31))
+            self.managers.setGeometry(QtCore.QRect(900, 10, 131, 31))
             self.managers.setText('Managers')
 
+        self.comboBox_2 = QtWidgets.QComboBox(self.tab)
+        self.comboBox_2.setGeometry(QtCore.QRect(345, 16, 105, 21))
+        #self.add_warehouses_to_combobox()
+
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
-        self.lineEdit.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit.setGeometry(QtCore.QRect(180, 16, 153, 21))
         self.lineEdit.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit)
 
@@ -72,7 +85,7 @@ class MainDialog(QtWidgets.QDialog):
         self.table_widgets.append(self.tableWidget_2)
 
         self.lineEdit_2 = QtWidgets.QLineEdit(self.tab_2)
-        self.lineEdit_2.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_2.setGeometry(QtCore.QRect(180, 16, 153, 21))
         self.lineEdit_2.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_2)
 
@@ -90,7 +103,7 @@ class MainDialog(QtWidgets.QDialog):
         self.table_widgets.append(self.tableWidget_3)
 
         self.lineEdit_3 = QtWidgets.QLineEdit(self.tab_3)
-        self.lineEdit_3.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_3.setGeometry(QtCore.QRect(180, 16, 153, 21))
         self.lineEdit_3.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_3)
 
@@ -101,7 +114,7 @@ class MainDialog(QtWidgets.QDialog):
         self.edit_warehouse.setGeometry(QtCore.QRect(900, 10, 131, 31))
 
         self.comboBox = QtWidgets.QComboBox(self.tab_3)
-        self.comboBox.setGeometry(QtCore.QRect(10, 20, 161, 21))
+        self.comboBox.setGeometry(QtCore.QRect(10, 16, 161, 21))
         self.add_warehouses_to_combobox()
 
         self.tabWidget.addTab(self.tab_3, "")
@@ -115,7 +128,7 @@ class MainDialog(QtWidgets.QDialog):
         self.table_widgets.append(self.tableWidget_4)
 
         self.lineEdit_4 = QtWidgets.QLineEdit(self.tab_4)
-        self.lineEdit_4.setGeometry(QtCore.QRect(180, 20, 153, 21))
+        self.lineEdit_4.setGeometry(QtCore.QRect(180, 16, 153, 21))
         self.lineEdit_4.setPlaceholderText('Поиск...')
         self.lineedit_list.append(self.lineEdit_4)
 
@@ -140,7 +153,7 @@ class MainDialog(QtWidgets.QDialog):
         self.tableWidget.cellDoubleClicked.connect(self.open_transaction_card)
         if user == 'super':
             self.add_manager.clicked.connect(self.open_manager_card)
-            self.add_document.clicked.connect(self.open_window_document)
+            self.add_word.clicked.connect(self.add_word_doc)
             self.managers.clicked.connect(self.open_managers_list)
 
         self.announcement = QMessageBox()
@@ -156,7 +169,7 @@ class MainDialog(QtWidgets.QDialog):
         self.new_transaction.setText(_translate("Dialog", "New transaction"))
         self.upload_document.setText(_translate("Dialog", "Upload document"))
         if self.user == 'super':
-            self.add_document.setText(_translate("Dialog", "Add document"))
+            self.add_word.setText(_translate("Dialog", "Add Word"))
             self.add_manager.setText(_translate("Dialog", "Add manager"))
             self.managers.setText(_translate("Dialog", "Managers"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Operations"))
@@ -306,7 +319,7 @@ class MainDialog(QtWidgets.QDialog):
         self.announcement.exec_()
         self.insert_data_into_table()
 
-    def open_window_document(self):
+    def add_word_doc(self):
         from docx import Document
         doc = Document()
         doc.add_heading("Вот доступные поля для создания шаблона", level=1)
@@ -315,6 +328,12 @@ class MainDialog(QtWidgets.QDialog):
             doc.add_paragraph(f'{k}  -- {", ".join(v)}')
             doc.add_paragraph('')
         doc.save('My/shablon.docx')
+        if platform.system() == 'Darwin':
+            subprocess.call(('open', 'My/shablon.docx'))  # macOS
+        elif platform.system() == 'Windows':
+            os.startfile('My/shablon.docx')  # Windows
+        else:
+            subprocess.call(('xdg-open', 'My/shablon.docx'))  # linux variants
 
     def open_managers_list(self):
         """Открывает список менеджеров."""
@@ -323,7 +342,6 @@ class MainDialog(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = MainDialog(file_db='../My/store_database.db')
     ui.show()
