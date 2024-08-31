@@ -16,7 +16,7 @@ class DialogWindow(qtw.QWidget):
         self.comboBox = qtw.QComboBox()
         self.comboBox.addItems(['acceptance', 'sale', 'write-off', 'movement'])
 
-        self.con = sqlite3.connect('store_database.db')  #!!!!!!!!!!!!!!! Change path, please!!!!!!!!!!
+        self.con = sqlite3.connect('My/store_database.db')  #!!!!!!!!!!!!!!! Change path, please!!!!!!!!!!
 
         with self.con:
             # table_data_product_id = self.con.execute("SELECT id FROM Products").fetchall()

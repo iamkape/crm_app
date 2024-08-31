@@ -1,5 +1,5 @@
 from datetime import datetime
-from openpyxl import load_workbook
+import xlsxwriter
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 import re
@@ -8,6 +8,8 @@ from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox, QTableWidget
 import subprocess, os, platform
+from openpyxl.reader.excel import load_workbook
+
 from Maksim.db_class import DatabaseManager
 from collections import ChainMap
 
@@ -144,38 +146,10 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 else:  self.alert_msg.close()
             except Exception as er:
                 print(f'Error : {er}')
-                # self.alert_msg.setText(f'Something wrong {er}')
-                # self.alert_msg.setStandardButtons(QMessageBox.Ok)
-                # self.alert_msg.exec_()
+                self.alert_msg.setText(f'Something wrong {er}')
+                self.alert_msg.setStandardButtons(QMessageBox.Ok)
+                self.alert_msg.exec_()
 
-    # def saveClient(self)->None:
-    #     """Сохраняет данные нового клиента
-    #     Проверяет валидность email"""
-    #     line_text = []
-    #     pattern = re.compile(r"^\S+@\S+\.\S+$")
-    #     is_email = pattern.match(self.lineedit_data[3].text())
-    #     if is_email is None:
-    #         self.alert_msg.setText('Check email address (user@example.com)')
-    #         self.alert_msg.setStandardButtons(QMessageBox.Ok)
-    #         self.alert_msg.exec_()
-    #     else:
-    #         for i in range(len(self.lineedit_data)):
-    #             line_text.append(self.lineedit_data[i].text())
-    #         with self.con:
-    #             val = ', '.join('?' * (len(self.name_of_col)))
-    #             column = ', '.join(self.name_of_col)
-    #             try:
-    #                 query_database = (f"""INSERT OR REPLACE INTO Customers ({column}) VALUES ({val})""")
-    #                 self.con.execute(query_database, line_text)
-    #                 self.alert_msg.setText('Your data is saved!')
-    #                 self.alert_msg.setStandardButtons(QMessageBox.Ok)
-    #                 self.alert_msg.exec_()
-    #             except Exception as er:
-    #                 self.alert_msg.setText(f'Error {er}')
-    #                 self.alert_msg.setStandardButtons(QMessageBox.Ok)
-    #                 self.alert_msg.exec_()
-    #                 print(er)
-    #             QtWidgets.QDialog.close(self)
 
     def saveClient(self) -> None:
         """Сохраняет данные нового клиента и проверяет валидность."""
@@ -227,7 +201,27 @@ class Ui_Client_Add(QtWidgets.QDialog):
         worklist = load_workbook(file_path)
         sheet = worklist.active
         head_in_teamplate = next(sheet.iter_rows(min_row=1,max_row=1,values_only=True))
-
+        with self.con:
+            a = self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id={self.data[0]}").fetchall()
+            req = self.con.execute(f"SELECT {(', '.join(head_in_teamplate))} FROM Transactions_history "
+                   f"LEFT JOIN Customers ON "
+                   f"Transactions_history.customer_id = Customers.id "
+                   f"LEFT JOIN Employees ON "
+                   f"Transactions_history.employee_id = Employees.id "
+                   f"LEFT JOIN Products ON " 
+                   f"Transactions_history.product_id = Products.id "
+                   f"LEFT JOIN Warehouses ON "
+                   f"Transactions_history.warehouse_to = Warehouses.id ").fetchall()
+            new_file = xlsxwriter.Workbook('data.xlsx')
+            worksheet = new_file.add_worksheet()
+            row = 1
+            for i in req:
+                col = 0
+                for value in i:
+                    worksheet.write(row,col,value)
+                    col+=1
+                row+=1
+            new_file.close()
 
 
     def fill_data(self)->dict:
@@ -259,8 +253,9 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 res1 = dict(zip(col_name_employees[1:3],employee[0][1:3]))
                 res2 = dict(zip(col_name_products[1:],product[0][1:]))
                 res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
-                combina = ChainMap(res, res1, res2, res3)
-                return dict(combina)
+                combina = {**res, **res1, **res2, **res3}
+                # combina = ChainMap(res, res1, res2, res3)
+                return combina
                 # print(customer[0][1:], employee[0][1:3], product[0][1:], warehouse[0][1:])
 
 
@@ -272,9 +267,6 @@ class Ui_Client_Add(QtWidgets.QDialog):
         """Производит выгрузку документа"""
         if self.combo.currentText().endswith('docx'): self.forWord()
         else: self.forExcel()
-
-
-
         # if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
         # elif platform.system() == 'Windows': os.startfile(filepath) # Windows
         # else: subprocess.call(('xdg-open', 'My/newDOc.docx')) # linux variants
