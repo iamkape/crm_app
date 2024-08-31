@@ -190,9 +190,37 @@ class Ui_Client_Add(QtWidgets.QDialog):
 
     def forWord(self)->None:
         """Данный метод выгружает данные в Word"""
-        data_for_doc = self.fill_data()
+        if self.data is not False:
+            with self.con:
+                selected_row = self.tableWidget.currentRow()
+                if selected_row >= 0:
+                    self.row_data = []
+                    column_count = self.tableWidget.columnCount()
+                    for column in range(column_count):
+                        item = self.tableWidget.item(selected_row, column)
+                        if item is not None:
+                            self.row_data.append(item.text())
+                        else:
+                            self.row_data.append('')
+                customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.row_data[7]}").fetchall()
+                employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.row_data[9]}").fetchall()
+                product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.row_data[2]}").fetchall()
+                warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.row_data[3]}").fetchall()
+                n_customer = self.con.execute("Pragma table_info('Customers')").fetchall()
+                col_name_customers = [i[1] for i in n_customer]
+                n_employee = self.con.execute("Pragma table_info('Employees')").fetchall()
+                col_name_employees = [i[1] for i in n_employee]
+                n_product = self.con.execute("Pragma table_info('Products')").fetchall()
+                col_name_products = [i[1] for i in n_product]
+                n_warehouse = self.con.execute("Pragma table_info('Warehouses')").fetchall()
+                col_name_warehouse = [i[1] for i in n_warehouse]
+                res = dict(zip(col_name_customers[1:],customer[0][1:]))
+                res1 = dict(zip(col_name_employees[1:3],employee[0][1:3]))
+                res2 = dict(zip(col_name_products[1:],product[0][1:]))
+                res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
+                combina = {**res, **res1, **res2, **res3}
         doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
-        doc.render(data_for_doc)
+        doc.render(combina)
         doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_manager.id{self.row_data[0]}.docx')
         print(self.row_data)
 
@@ -241,38 +269,38 @@ class Ui_Client_Add(QtWidgets.QDialog):
         new_file.close()
 
 
-    def fill_data(self)->dict:
-        """Данный метод собирает все данные в словарь для последующего рендер в Word"""
-        if self.data is not False:
-            with self.con:
-                selected_row = self.tableWidget.currentRow()
-                if selected_row >= 0:
-                    self.row_data = []
-                    column_count = self.tableWidget.columnCount()
-                    for column in range(column_count):
-                        item = self.tableWidget.item(selected_row, column)
-                        if item is not None:
-                            self.row_data.append(item.text())
-                        else:
-                            self.row_data.append('')
-                customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.row_data[7]}").fetchall()
-                employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.row_data[9]}").fetchall()
-                product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.row_data[2]}").fetchall()
-                warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.row_data[3]}").fetchall()
-                n_customer = self.con.execute("Pragma table_info('Customers')").fetchall()
-                col_name_customers = [i[1] for i in n_customer]
-                n_employee = self.con.execute("Pragma table_info('Employees')").fetchall()
-                col_name_employees = [i[1] for i in n_employee]
-                n_product = self.con.execute("Pragma table_info('Products')").fetchall()
-                col_name_products = [i[1] for i in n_product]
-                n_warehouse = self.con.execute("Pragma table_info('Warehouses')").fetchall()
-                col_name_warehouse = [i[1] for i in n_warehouse]
-                res = dict(zip(col_name_customers[1:],customer[0][1:]))
-                res1 = dict(zip(col_name_employees[1:3],employee[0][1:3]))
-                res2 = dict(zip(col_name_products[1:],product[0][1:]))
-                res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
-                combina = {**res, **res1, **res2, **res3}
-                return combina
+    # def fill_data(self)->dict:
+    #     """Данный метод собирает все данные в словарь для последующего рендер в Word"""
+    #     if self.data is not False:
+    #         with self.con:
+    #             selected_row = self.tableWidget.currentRow()
+    #             if selected_row >= 0:
+    #                 self.row_data = []
+    #                 column_count = self.tableWidget.columnCount()
+    #                 for column in range(column_count):
+    #                     item = self.tableWidget.item(selected_row, column)
+    #                     if item is not None:
+    #                         self.row_data.append(item.text())
+    #                     else:
+    #                         self.row_data.append('')
+    #             customer = self.con.execute(f"SELECT * FROM Customers WHERE id = {self.row_data[7]}").fetchall()
+    #             employee = self.con.execute(f"SELECT * FROM Employees WHERE id = {self.row_data[9]}").fetchall()
+    #             product = self.con.execute(f"SELECT * FROM Products WHERE id = {self.row_data[2]}").fetchall()
+    #             warehouse = self.con.execute(f"SELECT * FROM Warehouses WHERE id = {self.row_data[3]}").fetchall()
+    #             n_customer = self.con.execute("Pragma table_info('Customers')").fetchall()
+    #             col_name_customers = [i[1] for i in n_customer]
+    #             n_employee = self.con.execute("Pragma table_info('Employees')").fetchall()
+    #             col_name_employees = [i[1] for i in n_employee]
+    #             n_product = self.con.execute("Pragma table_info('Products')").fetchall()
+    #             col_name_products = [i[1] for i in n_product]
+    #             n_warehouse = self.con.execute("Pragma table_info('Warehouses')").fetchall()
+    #             col_name_warehouse = [i[1] for i in n_warehouse]
+    #             res = dict(zip(col_name_customers[1:],customer[0][1:]))
+    #             res1 = dict(zip(col_name_employees[1:3],employee[0][1:3]))
+    #             res2 = dict(zip(col_name_products[1:],product[0][1:]))
+    #             res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
+    #             combina = {**res, **res1, **res2, **res3}
+    #             return combina
 
 
     def get_files(self,directory)->list:
