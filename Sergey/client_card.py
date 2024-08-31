@@ -2,16 +2,15 @@ from datetime import datetime
 import xlsxwriter
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
-import re
 from docxtpl import DocxTemplate
 from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox, QTableWidget
-import subprocess, os, platform
+from PyQt5.QtWidgets import QLineEdit, QLabel, QMessageBox
+import os
 from openpyxl.reader.excel import load_workbook
 
 from Maksim.db_class import DatabaseManager
-from collections import ChainMap
+
 
 class Ui_Client_Add(QtWidgets.QDialog):
     def __init__(self,data):
@@ -189,20 +188,34 @@ class Ui_Client_Add(QtWidgets.QDialog):
             QtWidgets.QDialog.close(self)
 
 
-    def forWord(self):
+    def forWord(self)->None:
+        """Данный метод выгружает данные в Word"""
         data_for_doc = self.fill_data()
         doc = DocxTemplate(f'My/teamplates/{self.combo.currentText()}')
         doc.render(data_for_doc)
-        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_{self.row_data[0]}.docx')
+        doc.save(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_manager.id{self.row_data[0]}.docx')
+        print(self.row_data)
 
 
-    def forExcel(self):
+    def forExcel(self)->None:
+        """Данный метод выгружает данные в Excel"""
         file_path = (f'My/teamplates/{self.combo.currentText()}')
         worklist = load_workbook(file_path)
         sheet = worklist.active
         head_in_teamplate = next(sheet.iter_rows(min_row=1,max_row=1,values_only=True))
+        if self.data is not False:
+            with self.con:
+                selected_row = self.tableWidget.currentRow()
+                if selected_row >= 0:
+                    self.row_data = []
+                    column_count = self.tableWidget.columnCount()
+                    for column in range(column_count):
+                        item = self.tableWidget.item(selected_row, column)
+                        if item is not None:
+                            self.row_data.append(item.text())
+                        else:
+                            self.row_data.append('')
         with self.con:
-            a = self.con.execute(f"SELECT * FROM Transactions_history WHERE customer_id={self.data[0]}").fetchall()
             req = self.con.execute(f"SELECT {(', '.join(head_in_teamplate))} FROM Transactions_history "
                    f"LEFT JOIN Customers ON "
                    f"Transactions_history.customer_id = Customers.id "
@@ -211,20 +224,25 @@ class Ui_Client_Add(QtWidgets.QDialog):
                    f"LEFT JOIN Products ON " 
                    f"Transactions_history.product_id = Products.id "
                    f"LEFT JOIN Warehouses ON "
-                   f"Transactions_history.warehouse_to = Warehouses.id ").fetchall()
-            new_file = xlsxwriter.Workbook('data.xlsx')
-            worksheet = new_file.add_worksheet()
-            row = 1
-            for i in req:
-                col = 0
-                for value in i:
-                    worksheet.write(row,col,value)
-                    col+=1
-                row+=1
-            new_file.close()
+                   f"Transactions_history.warehouse_to = Warehouses.id "
+                   f"WHERE Customers.id = {self.data[0]}").fetchall()
+        new_file = xlsxwriter.Workbook(f'My/doc/{datetime.now().strftime("%Y-%m-%d")}_{self.row_data[1]}_manager.id'
+                                       f'{self.row_data[9]}.xlsx')
+        worksheet = new_file.add_worksheet()
+        for col, v in enumerate(list(head_in_teamplate)):
+            worksheet.write(0,col,v)
+        row = 1
+        for i in req:
+            col = 0
+            for value in i:
+                worksheet.write(row,col,value)
+                col+=1
+            row+=1
+        new_file.close()
 
 
     def fill_data(self)->dict:
+        """Данный метод собирает все данные в словарь для последующего рендер в Word"""
         if self.data is not False:
             with self.con:
                 selected_row = self.tableWidget.currentRow()
@@ -254,17 +272,16 @@ class Ui_Client_Add(QtWidgets.QDialog):
                 res2 = dict(zip(col_name_products[1:],product[0][1:]))
                 res3 = dict(zip(col_name_warehouse[1:],warehouse[0][1:]))
                 combina = {**res, **res1, **res2, **res3}
-                # combina = ChainMap(res, res1, res2, res3)
                 return combina
-                # print(customer[0][1:], employee[0][1:3], product[0][1:], warehouse[0][1:])
 
 
-    def get_files(self,directory):
+    def get_files(self,directory)->list:
+        """Данный метод собирает названия всех файлов в папке для отображения в Combobox"""
         return [file for file in os.listdir(directory) if os.path.isfile((os.path.join(directory,file)))]
 
 
     def uploadDoc(self)->None:
-        """Производит выгрузку документа"""
+        """Производит выгрузку документа в зависимости какой шаблон для этого выбран"""
         if self.combo.currentText().endswith('docx'): self.forWord()
         else: self.forExcel()
         # if platform.system() == 'Darwin': subprocess.call(('open', filepath)) # macOS
