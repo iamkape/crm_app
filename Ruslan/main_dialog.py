@@ -5,6 +5,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QMessageBox
 from functools import partial
+from docx import Document
 import sqlite3
 import sys
 import subprocess
@@ -67,7 +68,8 @@ class MainDialog(QtWidgets.QDialog):
 
         self.comboBox_2 = QtWidgets.QComboBox(self.tab)
         self.comboBox_2.setGeometry(QtCore.QRect(345, 16, 105, 21))
-        #self.add_warehouses_to_combobox()
+        name_file = Ui_Client_Add.get_files(self, 'My/teamplates')
+        self.comboBox_2.addItems(name_file)
 
         self.lineEdit = QtWidgets.QLineEdit(self.tab)
         self.lineEdit.setGeometry(QtCore.QRect(180, 16, 153, 21))
@@ -151,10 +153,12 @@ class MainDialog(QtWidgets.QDialog):
         self.edit_warehouse.clicked.connect(partial(self.open_warehouse_card, True))
         self.new_transaction.clicked.connect(self.open_transaction_card)
         self.tableWidget.cellDoubleClicked.connect(self.open_transaction_card)
+        self.upload_document.clicked.connect(self.upload_doc)
         if user == 'super':
             self.add_manager.clicked.connect(self.open_manager_card)
             self.add_word.clicked.connect(self.add_word_doc)
             self.managers.clicked.connect(self.open_managers_list)
+            self.add_excel.clicked.connect(self.add_excel_doc)
 
         self.announcement = QMessageBox()
         self.announcement.setWindowTitle('Info')
@@ -320,25 +324,41 @@ class MainDialog(QtWidgets.QDialog):
         self.insert_data_into_table()
 
     def add_word_doc(self):
-        from docx import Document
         doc = Document()
         doc.add_heading("Вот доступные поля для создания шаблона", level=1)
         for k, v in self.pattern_doc.items():
             doc.add_paragraph('')
             doc.add_paragraph(f'{k}  -- {", ".join(v)}')
             doc.add_paragraph('')
-        doc.save('My/shablon.docx')
+        doc.save('My/teamplates/shablon.docx')
         if platform.system() == 'Darwin':
-            subprocess.call(('open', 'My/shablon.docx'))  # macOS
+            subprocess.call(('open', 'My/teamplates/shablon.docx'))  # macOS
         elif platform.system() == 'Windows':
-            os.startfile('My/shablon.docx')  # Windows
+            os.system('start My/teamplates/shablon.docx')  # Windows
         else:
-            subprocess.call(('xdg-open', 'My/shablon.docx'))  # linux variants
+            subprocess.call(('xdg-open', 'My/teamplates/shablon.docx'))  # linux variants
+
+    def add_excel_doc(self):
+        doc = Document()
+        doc.save('My/teamplates/shablon.xlsx')
+        if platform.system() == 'Darwin':
+            subprocess.call(('open', 'My/teamplates/shablon.xlsx'))  # macOS
+        elif platform.system() == 'Windows':
+            os.system('start My/teamplates/shablon.xlsx')  # Windows
+        else:
+            subprocess.call(('xdg-open', 'My/teamplates/shablon.xlsx'))  # linux variants
 
     def open_managers_list(self):
         """Открывает список менеджеров."""
         managers_window = Ui_listManager()
         managers_window.exec_()
+
+    def upload_doc(self) -> None:
+        """Производит выгрузку документа в зависимости какой шаблон для этого выбран"""
+        if self.comboBox_2.currentText().endswith('docx'):
+            Ui_Client_Add.forWord(self)
+        else:
+            Ui_Client_Add.forExcel(self)
 
 
 if __name__ == "__main__":
