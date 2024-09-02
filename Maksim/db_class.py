@@ -53,7 +53,7 @@ class DatabaseManager:
                 warehouse_from INTEGER,
                 warehouse_to INTEGER,
                 quantity INTEGER NOT NULL,
-                transaction_date DATETIME NOT NULL,
+                transaction_date DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
                 customer_id INTEGER,
                 status VARCHAR(50) NOT NULL,
                 employee_id INTEGER NOT NULL,
