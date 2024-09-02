@@ -161,7 +161,7 @@ class DatabaseManager:
                 warehouse_from = random.randint(1, 2) if transaction_type == "Перемещение" else None
                 warehouse_to = random.randint(1, 2) if transaction_type in ["Перемещение", "Приемка"] else None
                 quantity = random.randint(1, 50)
-                transaction_date = self.faker.date_time_between(start_date='-1y', end_date='now')
+                transaction_date = datetime.now()
                 customer_id = random.randint(1, 5) if transaction_type == "Продажа" else None
                 status = random.choice(statuses)
                 employee_id = 1  # Предполагается, что существует администратор с id=1
